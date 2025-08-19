@@ -1,0 +1,394 @@
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>지도 도구</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+  <style>
+    :root{
+      --bg:#0b0f13; --panel:#0f172a; --muted:#94a3b8; --line:#1f2937;
+      --text:#e5e7eb; --accent:#4ade80; --panel2:#0c1320;
+    }
+    html,body{height:100%}
+    body{margin:0;display:grid;grid-template-columns:380px 1fr;height:100vh;
+         background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,sans-serif}
+    aside{border-right:1px solid var(--line);overflow:auto;background:rgba(255,255,255,0.02)}
+    main{position:relative}
+    #map{position:absolute;inset:0}
+    h2{margin:0 0 8px 0;font-size:15px}
+    .pane{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+    .pane:nth-child(even){background:var(--panel2)}
+    .row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+    .field{flex:1;display:flex;flex-direction:column;gap:6px;min-width:130px}
+    .label{font-size:12px;color:var(--muted)}
+    input,select,button{padding:10px;border:1px solid var(--line);border-radius:10px;background:#0b1220;color:var(--text)}
+    input[type="number"]{text-align:right}
+    button{cursor:pointer}
+    .list{max-height:150px;overflow:auto;border:1px dashed var(--line);padding:8px;border-radius:10px;background:rgba(0,0,0,0.15)}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:4px 8px;border-radius:999px;border:1px solid var(--line);margin:2px 6px 2px 0;background:#0b1220}
+    .pill .x{cursor:pointer;opacity:.8}
+    .help{font-size:12px;color:var(--muted)}
+    [data-coord-mode="MGRS"] .ll-only{display:none}
+    [data-coord-mode="LL"] .mgrs-only{display:none}
+    .hr{height:1px;background:var(--line);margin:10px 0}
+
+    .custom-label { pointer-events:auto; user-select:none; }
+    .label-box {
+      font-size:13px; padding:4px 8px; border:1px solid #aaa; border-radius:4px;
+      white-space:nowrap; display:inline-block; transform:translate(-50%,-50%);
+      opacity:.85; transition:all .2s ease;
+    }
+    .label-box.hover { opacity:1; box-shadow:0 0 4px rgba(0,0,0,.4); }
+
+    /* 사이드바 접이식 */
+    .pane { padding:0; }
+    .pane h2{
+      font-size:17px; font-weight:700; margin:0; padding:12px 16px; cursor:pointer;
+      display:flex; align-items:center; gap:8px;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,0));
+      border-bottom:1px solid var(--line); user-select:none;
+    }
+    .pane .pane-content{ padding:12px 16px; }
+    .pane.collapsed > .pane-content{ display:none; }
+    .pane h2 .chev{ margin-left:auto; transition:transform .2s ease; opacity:.8; }
+    .pane.collapsed h2 .chev{ transform:rotate(-90deg); }
+
+    /* 관측점 편집 패널 스타일 */
+    #obsEditPanel { border:1px solid var(--line); border-radius:12px; padding:10px; background:#0b1220; }
+    #obsEditPanel .row + .row { margin-top: 8px; }
+
+    /* 지도타입/내위치 커스텀 컨트롤 */
+    .leaflet-control.custom-box {
+      background:#0b1220; color:var(--text); border:1px solid var(--line);
+      border-radius:10px; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,.25);
+      display:flex; gap:6px; align-items:center;
+    }
+    .custom-box .btn {
+      font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--line);
+      background:#0b1220; color:var(--text);
+    }
+    .custom-box .btn.active { border-color: var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+    .leaflet-control.custom-box{ display:block; }
+
+
+
+.custom-box .fold-header{
+  display:flex; align-items:center; gap:8px; padding:8px 10px; cursor:pointer;
+  border-bottom:1px solid var(--line); user-select:none;
+}
+.custom-box .fold-header .title{ font-size:13px; font-weight:600; }
+.custom-box .fold-header .chev{ margin-left:auto; transition:transform .2s ease; opacity:.8; }
+.custom-box.collapsed .fold-header .chev{ transform:rotate(-90deg); }
+
+.leaflet-control.custom-box .fold-content{
+  overflow: hidden;
+  max-height: 0;          /* 접힘 상태 기본값 */
+  opacity: 0;
+  padding: 0 10px;        /* 접힌 상태 패딩을 0으로 (좌우만 남김) */
+  transition:
+    max-height 260ms ease,
+    opacity    220ms ease,
+    padding    200ms ease;
+}
+
+.leaflet-control.custom-box:not(.collapsed) .fold-content{
+  max-height: 800px;      /* 콘텐츠 최대 높이보다 조금 크게 */
+  opacity: 1;
+  padding: 8px 10px;      /* 원래 패딩 복원 */
+}
+
+@media (prefers-reduced-motion: reduce){
+  .leaflet-control.custom-box .fold-content{
+    transition: none;
+  }
+}
+
+
+.custom-box .btn-row{ display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+.custom-box .btn{
+  font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--line);
+  background:#0b1220; color:var(--text); cursor:pointer;
+}
+.custom-box .btn.active { border-color: var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+
+/* 전체 사이드바 접기 */
+body.sidebar-collapsed{
+  grid-template-columns: 0 1fr;
+}
+body.sidebar-collapsed aside{
+  border-right: none; overflow: hidden;
+}
+
+#asideToggle, #asideExpand {
+  position: absolute; right: -14px; top: 50%;
+  transform: translateY(-50%);
+  width: 28px; height: 64px; border-radius: 12px;
+  border: 1px solid var(--line); background: #0b1220; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; z-index: 2001;
+}
+
+#asideExpand{
+  left: -14px; right: auto;
+}
+
+#asideToggle{ display: flex; }
+#asideExpand{ display: none; }
+body.sidebar-collapsed #asideToggle{ display: none; }
+body.sidebar-collapsed #asideExpand{ display: flex; }
+
+#asideToggle::after{ content: "‹"; font-size: 18px; font-weight: 700; }
+#asideExpand::after{ content: "›"; font-size: 18px; font-weight: 700; }
+/* 전체 사이드바 접기 */
+
+  /* === smooth fold animation for custom-box === */
+.leaflet-control.custom-box .fold-content{
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  padding: 0 10px;
+  transition:
+    max-height 260ms ease,
+    opacity    220ms ease,
+    padding    200ms ease;
+}
+.leaflet-control.custom-box:not(.collapsed) .fold-content{
+  max-height: 800px;
+  opacity: 1;
+  padding: 8px 10px;
+}
+@media (prefers-reduced-motion: reduce){
+  .leaflet-control.custom-box .fold-content{ transition: none; }
+}
+
+
+/* === sidebar pane header +/- indicators === */
+.pane h2{ position: relative; padding-left: 28px; }
+.pane h2::before{
+  content: "−";
+  position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%);
+  width: 14px; text-align: center;
+  font-weight: 900; opacity: .9;
+}
+.pane.collapsed h2::before{ content: "+"; }
+
+
+/* === sidebar collapse toggle buttons === */
+body.sidebar-collapsed{ grid-template-columns: 0 1fr; }
+body.sidebar-collapsed aside{ border-right: none; overflow: hidden; }
+aside{ position: relative; }
+
+#asideToggle, #asideExpand {
+  position: absolute; right: -14px; top: 50%;
+  transform: translateY(-50%);
+  width: 28px; height: 64px; border-radius: 12px;
+  border: 1px solid var(--line); background: #0b1220; color: var(--text);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; z-index: 2001;
+}
+#asideExpand{ left: -14px; right: auto; }
+#asideToggle{ display: flex; }
+#asideExpand{ display: none; }
+body.sidebar-collapsed #asideToggle{ display: none; }
+body.sidebar-collapsed #asideExpand{ display: flex; }
+#asideToggle::after{ content: "‹"; font-size: 18px; font-weight: 700; }
+#asideExpand::after{ content: "›"; font-size: 18px; font-weight: 700; }
+
+
+/* === custom-box layout fix === */
+.leaflet-control.custom-box{ display: block; }
+</style>
+
+  <!-- 라이브러리 -->
+  <script defer src="https://cdn.jsdelivr.net/npm/mgrs@2.1.0/dist/mgrs.min.js"></script>
+  <script defer src="https://unpkg.com/proj4@2.9.2/dist/proj4.js"></script>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script defer src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+  <script defer src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+
+  <!-- Google Maps JS API & GoogleMutant -->
+  <!-- NOTE: 키는 본인 키로 교체 -->
+  <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyClzD_uoZnDTmMhjE_Xu-2JhJW9KoZhfKk"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/leaflet.gridlayer.googlemutant@0.14.0/dist/Leaflet.GoogleMutant.min.js"></script>
+
+  <script defer src="app.js"></script>
+</head>
+
+<body data-coord-mode="MGRS">
+  <aside>
+    <div class="pane">
+      <h2>📍 좌표 입력 및 변환</h2>
+      <div class="pane-content">
+        <div class="row">
+          <div class="field">
+            <span class="label">좌표 모드</span>
+            <select id="coordMode">
+              <option value="MGRS" selected>MGRS</option>
+              <option value="LL">위도/경도</option>
+            </select>
+          </div>
+          <div class="field">
+            <span class="label">라벨 표시</span>
+            <label style="display:flex;gap:8px;align-items:center"><input id="toggleLabels" type="checkbox" checked /> 켜기/끄기</label>
+          </div>
+        </div>
+        <div class="row mgrs-only">
+          <div class="field">
+            <span class="label">관측점 MGRS</span>
+            <input id="obsMGRS" placeholder="52S DM 12345 67890" />
+          </div>
+        </div>
+        <div class="row ll-only">
+          <div class="field">
+            <span class="label">관측점 위도</span>
+            <input id="obsLat" type="number" step="0.000001" />
+          </div>
+          <div class="field">
+            <span class="label">관측점 경도</span>
+            <input id="obsLon" type="number" step="0.000001" />
+          </div>
+        </div>
+        <div class="help">지도 클릭 시 MGRS/위경도 필드가 함께 갱신됩니다.</div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <h2>🌬 바람 경로 예측</h2>
+      <div class="pane-content">
+        <div class="row mgrs-only">
+          <div class="field">
+            <span class="label">시작점 MGRS</span>
+            <input id="driftMGRS" placeholder="52S DM 12345 67890" />
+          </div>
+        </div>
+        <div class="row ll-only">
+          <div class="field">
+            <span class="label">시작 위도</span>
+            <input id="driftLat" type="number" step="0.000001" />
+          </div>
+          <div class="field">
+            <span class="label">시작 경도</span>
+            <input id="driftLon" type="number" step="0.000001" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="field"><span class="label">예측 시간(분)</span><input id="driftMinutes" type="number" value="60"></div>
+          <div class="field"><span class="label">표시 간격(분)</span><input id="markerIntervalMin" type="number" value="10"></div>
+          <div class="field"><span class="label">스텝(초)</span><input id="stepSeconds" type="number" value="60"></div>
+        </div>
+        <div class="row">
+          <div class="field"><span class="label">재조회 주기(초)</span><input id="refreshSec" type="number" value="0"></div>
+          <div class="field"><span class="label">가속 계수</span><input id="accelFactor" type="number" value="1"></div>
+          <div class="field"><span class="label">바람 레벨</span>
+            <select id="windSource">
+              <option value="10m">10 m</option>
+              <option value="925" selected>925 hPa (~3000 ft)</option>
+              <option value="850">850 hPa</option>
+              <option value="800">800 hPa</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button id="pickStartBtn">지도에서 시작점 선택</button>
+          <button id="runWindSim">바람 불러와 경로 계산</button>
+          <button id="clearDrift">바람 경로 삭제</button>
+        </div>
+        <div id="windMeta" class="help" style="margin-top:6px">—</div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <h2>🔭 관측점 및 교차선</h2>
+      <div class="pane-content">
+        <div class="row">
+          <div class="field"><span class="label">이름</span><input id="obsName" placeholder="관측1" /></div>
+          <div class="field"><span class="label">방위(°)</span><input id="obsBearing" type="number" value="0" /></div>
+          <div class="field"><span class="label">길이(km)</span><input id="lineKm" type="number" value="20" /></div>
+        </div>
+        <div class="row">
+          <button id="addObserverBtn">관측점 추가</button>
+          <button id="recomputeX">교차 재계산</button>
+          <button id="clearObs">모든 관측점 삭제</button>
+        </div>
+        <div class="list" id="observerList"></div>
+
+        <div class="hr"></div>
+
+        <!-- 관측점 편집 패널 -->
+        <div id="obsEditPanel" hidden>
+          <div class="help" style="margin-bottom:6px">선택한 관측점을 편집합니다.</div>
+          <div class="row">
+            <div class="field"><span class="label">이름</span><input id="editName" /></div>
+            <div class="field"><span class="label">방위(°)</span><input id="editBearing" type="number" /></div>
+            <div class="field"><span class="label">길이(km)</span><input id="editLineKm" type="number" /></div>
+          </div>
+          <div class="row mgrs-only">
+            <div class="field"><span class="label">MGRS</span><input id="editMGRS" placeholder="52S DM 12345 67890" /></div>
+          </div>
+          <div class="row ll-only">
+            <div class="field"><span class="label">위도</span><input id="editLat" type="number" step="0.000001" /></div>
+            <div class="field"><span class="label">경도</span><input id="editLon" type="number" step="0.000001" /></div>
+          </div>
+          <div class="row">
+            <button id="editPick">지도에서 좌표 선택</button>
+            <span style="flex:1"></span>
+            <button id="editSave">저장</button>
+            <button id="editCancel">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <h2>➕ 계산된 교차점</h2>
+      <div class="pane-content">
+        <div class="list" id="crossList"></div>
+        <div class="row">
+          <button id="clearXRemoved">숨긴 교차점 표시</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <h2>✏ 지도 도형 편집</h2>
+      <div class="pane-content">
+        <div class="row">
+          <button id="clearShapes">모든 도형 삭제</button>
+        </div>
+        <div class="help">그린 도형/마커를 클릭해 색상/라벨 변경 가능</div>
+      </div>
+    </div>
+
+    <div class="pane">
+      <h2>💾 데이터 스냅샷 / 가져오기·내보내기</h2>
+      <div class="pane-content">
+        <div class="row">
+          <button id="saveSnapshot">스냅샷 저장</button>
+          <button id="loadSnapshot">스냅샷 불러오기</button>
+          <button id="exportSnapshot">JSON 내보내기</button>
+          <label class="pill"><input type="file" id="importFile" style="display:none"><span>JSON 가져오기</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 숨김 스텁(이벤트 바인딩 충돌 방지) -->
+    <div id="editPanel" hidden>
+      <button id="closeEditBtn" type="button"></button>
+      <button id="saveEditBtn" type="button"></button>
+    </div>
+  <button id="asideToggle" type="button" title="사이드바 숨기기"></button>
+</aside>
+
+  <main>
+<button id="asideExpand" type="button" title="사이드바 보이기"></button>
+
+    <div id="map"></div>
+</main>
+
+</body>
+</html>
