@@ -16,7 +16,13 @@
     html,body{height:100%}
     body{margin:0;display:grid;grid-template-columns:380px 1fr;height:100vh;
          background:var(--bg);color:var(--text);font-family:system-ui,Segoe UI,Roboto,Apple SD Gothic Neo,Malgun Gothic,sans-serif}
-    aside{border-right:1px solid var(--line);overflow:auto;background:rgba(255,255,255,0.02)}
+
+    aside {
+  position: relative; 
+  border-right: 1px solid var(--line);
+  overflow: visible;
+  background: rgba(255,255,255,0.02);
+}
     main{position:relative}
     #map{position:absolute;inset:0}
     h2{margin:0 0 8px 0;font-size:15px}
@@ -145,64 +151,121 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
 #asideExpand::after{ content: "›"; font-size: 18px; font-weight: 700; }
 /* 전체 사이드바 접기 */
 
-  /* === smooth fold animation for custom-box === */
-.leaflet-control.custom-box .fold-content{
-  overflow: hidden;
-  max-height: 0;
-  opacity: 0;
-  padding: 0 10px;
-  transition:
-    max-height 260ms ease,
-    opacity    220ms ease,
-    padding    200ms ease;
-}
-.leaflet-control.custom-box:not(.collapsed) .fold-content{
-  max-height: 800px;
-  opacity: 1;
-  padding: 8px 10px;
-}
-@media (prefers-reduced-motion: reduce){
-  .leaflet-control.custom-box .fold-content{ transition: none; }
-}
-
-
-/* === sidebar pane header +/- indicators === */
-.pane h2{ position: relative; padding-left: 28px; }
+/* 사이드바 제목 왼쪽에 +/− 아이콘 표시 */
+.pane h2{ position:relative; padding-left:28px; }
 .pane h2::before{
-  content: "−";
-  position: absolute; left: 10px; top: 50%;
-  transform: translateY(-50%);
-  width: 14px; text-align: center;
-  font-weight: 900; opacity: .9;
+  content:"−"; position:absolute; left:10px; top:50%;
+  transform:translateY(-50%); width:14px; text-align:center;
+  font-weight:900; opacity:.9;
 }
-.pane.collapsed h2::before{ content: "+"; }
+.pane.collapsed h2::before{ content:"+"; }
 
-
-/* === sidebar collapse toggle buttons === */
-body.sidebar-collapsed{ grid-template-columns: 0 1fr; }
-body.sidebar-collapsed aside{ border-right: none; overflow: hidden; }
-aside{ position: relative; }
-
-#asideToggle, #asideExpand {
-  position: absolute; right: -14px; top: 50%;
-  transform: translateY(-50%);
-  width: 28px; height: 64px; border-radius: 12px;
-  border: 1px solid var(--line); background: #0b1220; color: var(--text);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; z-index: 2001;
+aside{
+  height: 100vh;               /* ★ 고정 */
 }
-#asideExpand{ left: -14px; right: auto; }
-#asideToggle{ display: flex; }
-#asideExpand{ display: none; }
-body.sidebar-collapsed #asideToggle{ display: none; }
-body.sidebar-collapsed #asideExpand{ display: flex; }
-#asideToggle::after{ content: "‹"; font-size: 18px; font-weight: 700; }
-#asideExpand::after{ content: "›"; font-size: 18px; font-weight: 700; }
 
+.aside-scroll{
+  height: 100%;
+  overflow: auto;
+}
+.aside-scroll::-webkit-scrollbar{
+  width: 0; height: 0;          /* Chrome/Safari */
+}
 
-/* === custom-box layout fix === */
-.leaflet-control.custom-box{ display: block; }
-</style>
+body{ grid-template-columns: 1fr !important; }
+
+aside{
+  position: fixed;                                       
+  left: 0; top: 0; height: 100vh; width: 380px;    
+  transform: translateX(0);                            
+  transition: transform 260ms ease;
+  z-index: 2000;
+}
+
+/* 접힘 상태: 사이드바만 화면 밖으로 슬라이드 */
+body.sidebar-collapsed aside{
+  transform: translateX(-100%);
+  /* border-right/overflow는 기존 값 유지해도 무방 */
+}
+
+/* 우측 중앙 핸들 위치는 fixed 사이드바 기준으로 동일하게 동작 */
+#asideToggle{ right: -14px; }      /* 필요시 -16, -18 등 미세 조정 */
+
+/* 그리기도구(좌측 상단 컨테이너)가 사이드바를 따라다니도록 */
+.leaflet-control-container .leaflet-top.leaflet-left{
+  left: 12px;                 /* 기본 위치 */
+  transition: left 260ms ease;
+}
+
+/* 사이드바가 열려 있을 때: 사이드바 너비(380) + 간격(12) 만큼 우측으로 이동 */
+body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-left{
+  left: 392px;                /* 380 + 12 */
+}
+
+/* ===== 모바일 최적화 (<= 768px) ===== */
+@media (max-width: 768px){
+
+  /* 사이드바: 전체 화면 오버레이로 넓게 */
+  aside{
+    width: calc(100vw - 16px);
+    height: 100dvh; /* iOS 안전영역 대응 */
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  }
+
+  /* 사이드바 제목 터치 영역 확대 */
+  .pane h2{
+    font-size: 16px;
+    padding: 14px 16px 14px 32px; /* +/− 아이콘 공간 */
+  }
+
+  /* 사이드바 접기/펼치기 버튼(핸들) 터치 크기 업 */
+  #asideToggle, #asideExpand{
+    width: 36px; height: 72px; border-radius: 14px;
+  }
+  #asideToggle::after, #asideExpand::after{ font-size: 20px; }
+
+  /* 내부 스크롤: 스크롤은 되되 바는 숨김(모바일 미려) */
+  .aside-scroll{
+    height: 100%;
+    overflow: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .aside-scroll::-webkit-scrollbar{ width:0; height:0; }
+
+  /* 지도 컨트롤(좌상단) 사이드바 따라 이동 — 기존 392px → 모바일 폭 기준 계산 */
+  .leaflet-control-container .leaflet-top.leaflet-left{
+    left: 12px; transition: left 260ms ease;
+  }
+  body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-left{
+    left: calc(100vw - 16px + 12px); /* aside width + 여백 */
+  }
+
+  /* 우측 상단(지도 모드 박스)이 너무 겹치면 약간 안쪽으로 */
+  .leaflet-control.custom-box{ margin-top: 8px; margin-right: 8px; }
+
+  /* 버튼류 터치 간격 확보 */
+  .custom-box .btn, button, input, select{
+    padding: 12px 12px;
+    font-size: 14px;
+  }
+
+  /* 지도 모드 패널 내부 버튼을 2열 그리드로 (세로 길이 단축) */
+  .custom-box .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+  .custom-box .btn-row:has(#btnLocate){ grid-template-columns: 1fr; } /* 내 위치는 한 줄 */
+
+  /* 스트리트뷰 제거했더라도 기타 패널이 너무 길면 접힘 기본 */
+  .pane{ border-bottom: 1px solid var(--line); }
+  .pane:not(.collapsed) .pane-content{ padding-bottom: 12px; }
+}
+
+/* 초소형 기기(<= 390px)에서 여백 조금 더 작게 */
+@media (max-width: 390px){
+  body{ font-size: 14px; }
+  .pane h2{ font-size: 15px; }
+}
+
+  </style>
 
   <!-- 라이브러리 -->
   <script defer src="https://cdn.jsdelivr.net/npm/mgrs@2.1.0/dist/mgrs.min.js"></script>
@@ -222,7 +285,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
 <body data-coord-mode="MGRS">
   <aside>
     <div class="pane">
-      <h2>📍 좌표 입력 및 변환</h2>
+      <h2>좌표 입력 및 변환</h2>
       <div class="pane-content">
         <div class="row">
           <div class="field">
@@ -258,7 +321,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
     </div>
 
     <div class="pane">
-      <h2>🌬 바람 경로 예측</h2>
+      <h2>바람 경로 예측</h2>
       <div class="pane-content">
         <div class="row mgrs-only">
           <div class="field">
@@ -303,7 +366,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
     </div>
 
     <div class="pane">
-      <h2>🔭 관측점 및 교차선</h2>
+      <h2>관측점 및 교차선</h2>
       <div class="pane-content">
         <div class="row">
           <div class="field"><span class="label">이름</span><input id="obsName" placeholder="관측1" /></div>
@@ -345,7 +408,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
     </div>
 
     <div class="pane">
-      <h2>➕ 계산된 교차점</h2>
+      <h2>계산된 교차점</h2>
       <div class="pane-content">
         <div class="list" id="crossList"></div>
         <div class="row">
@@ -355,7 +418,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
     </div>
 
     <div class="pane">
-      <h2>✏ 지도 도형 편집</h2>
+      <h2>지도 도형 편집</h2>
       <div class="pane-content">
         <div class="row">
           <button id="clearShapes">모든 도형 삭제</button>
@@ -365,7 +428,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
     </div>
 
     <div class="pane">
-      <h2>💾 데이터 스냅샷 / 가져오기·내보내기</h2>
+      <h2>데이터 스냅샷 / 가져오기·내보내기</h2>
       <div class="pane-content">
         <div class="row">
           <button id="saveSnapshot">스냅샷 저장</button>
@@ -381,12 +444,12 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
       <button id="closeEditBtn" type="button"></button>
       <button id="saveEditBtn" type="button"></button>
     </div>
+
   <button id="asideToggle" type="button" title="사이드바 숨기기"></button>
-</aside>
+  </aside>
 
   <main>
-<button id="asideExpand" type="button" title="사이드바 보이기"></button>
-
+  <button id="asideExpand" type="button" title="사이드바 보이기"></button>
     <div id="map"></div>
 </main>
 
