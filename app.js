@@ -998,40 +998,60 @@ if (window.map && window.drawLayer){
   });
 }
 
+// === aside 내부에 스크롤 래퍼를 주입해 버튼이 잘리지 않게 ===
+(function ensureAsideScrollWrapper(){
+  const aside = document.querySelector('aside');
+  if (!aside) return;
 
-// === initSidebarHeaders: clean emoji and bind collapse with +/- indicator ===
+  // 이미 래퍼가 있으면 패스
+  if (aside.querySelector('.aside-scroll')) return;
+
+  // 토글 버튼 위치 기억 (마지막에 있을 가능성 높음)
+  const toggleBtn = document.getElementById('asideToggle');
+
+  // 새 래퍼 생성
+  const wrap = document.createElement('div');
+  wrap.className = 'aside-scroll';
+
+  // aside의 자식들을 래퍼로 이동하되, 토글 버튼은 제외
+  const children = Array.from(aside.childNodes);
+  for (const node of children){
+    if (toggleBtn && node === toggleBtn) continue;
+    wrap.appendChild(node);
+  }
+
+  // 래퍼를 토글 버튼 앞에 삽입 (토글 버튼이 없으면 맨 끝)
+  if (toggleBtn) aside.insertBefore(wrap, toggleBtn);
+  else aside.appendChild(wrap);
+})();
+
+// === 사이드바 제목: 선두 이모지 제거 + 클릭으로 접기/펼치기(+/−는 CSS 가상요소) ===
 (function initSidebarHeaders(){
-  const panes = document.querySelectorAll('aside .pane');
-  panes.forEach(p => {
-    const h = p.querySelector('h2');
-    if (!h) return;
+  document.querySelectorAll('aside .pane').forEach(p=>{
+    const h = p.querySelector('h2'); if(!h) return;
+    // 제목 맨 앞의 이모지/기호 제거 (텍스트만 남김)
     const raw = h.textContent || "";
     const clean = raw.replace(/^[^\w가-힣]+/, "").trim();
-    // Keep existing inner HTML if it already has a label-text
-    if (!/label-text/.test(h.innerHTML)) {
-      h.textContent = clean;
-    }
+    h.textContent = clean;
+
+    // 헤더 클릭 시 접기/펼치기
     if (!p.dataset.bindCollapse){
-      h.addEventListener('click', () => {
-        p.classList.toggle('collapsed');
-      });
+      h.addEventListener('click', ()=> p.classList.toggle('collapsed'));
       p.dataset.bindCollapse = "1";
     }
   });
 })();
 
-
-// === bindSidebarToggle: collapse/expand whole sidebar ===
+// === 사이드바 전체 토글(‹ / › 버튼) ===
 (function bindSidebarToggle(){
   const hideBtn = document.getElementById('asideToggle');
   const showBtn = document.getElementById('asideExpand');
+
   hideBtn && hideBtn.addEventListener('click', ()=>{
     document.body.classList.add('sidebar-collapsed');
-    setTimeout(()=>{ try{ map.invalidateSize(); }catch(_){} }, 200);
   });
+
   showBtn && showBtn.addEventListener('click', ()=>{
     document.body.classList.remove('sidebar-collapsed');
-    setTimeout(()=>{ try{ map.invalidateSize(); }catch(_){} }, 200);
   });
 })();
-
