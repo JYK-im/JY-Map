@@ -140,6 +140,39 @@
   
   const map = L.map('map',{zoomControl:true}).setView([37.5665,126.9780], 8);
 
+
+let hudAltEl = null, hudCoordEl = null;
+let lastKnownElevation = NaN;
+const HudControl = L.Control.extend({
+  options: { position: 'bottomright' },
+  onAdd: function() {
+    const div = L.DomUtil.create('div', 'leaflet-control coord-hud');
+    div.innerHTML = `
+      <div class="hud-line" id="hudAlt">고도: —</div>
+      <div class="hud-line" id="hudCoord">좌표: —</div>
+    `;
+    L.DomEvent.disableClickPropagation(div);
+    L.DomEvent.disableScrollPropagation(div);
+    setTimeout(()=>{
+      hudAltEl   = document.getElementById('hudAlt');
+      hudCoordEl = document.getElementById('hudCoord');
+    },0);
+    return div;
+  }
+});
+map.addControl(new HudControl());
+
+function updateHud(lat, lon, elevMeters, {loading=false}={}) {
+  if (hudAltEl) {
+    hudAltEl.textContent = '고도: ' + (loading
+      ? '조회중…'
+      : (isFinite(elevMeters) ? `${Math.round(elevMeters)} m` : '—'));
+  }
+  if (hudCoordEl) {
+    hudCoordEl.textContent = formatCoordLabel(lat, lon);
+  }
+}
+
   
   let googleLayer = L.gridLayer.googleMutant({
     type: 'roadmap',  
@@ -336,7 +369,26 @@ map.flyTo([lat, lon], TARGET_ZOOM, { animate: true, duration: 0.8 });
   
   map.on('click', (e)=>{
     lastClickLatLng = e.latlng;
-    const lat=e.latlng.lat, lon=e.latlng.lng;
+    const lat = e.latlng.lat, lon = e.latlng.lng;
+
+    updateHud(lat, lon, NaN, {loading:true});
+    if (window.google && google.maps) {
+      window.__elevService = window.__elevService || new google.maps.ElevationService();
+      window.__elevService.getElevationForLocations(
+        { locations: [{ lat: lat, lng: lon }] },
+        (results, status) => {
+          let elev = NaN;
+          if (status === 'OK' && results && results[0] && typeof results[0].elevation === 'number') {
+            elev = results[0].elevation;
+          }
+          lastKnownElevation = elev;
+          updateHud(lat, lon, elev);
+        }
+      );
+    } else {
+      updateHud(lat, lon, NaN);
+    }
+
     clickMarkers.clearLayers();
     L.circleMarker([lat,lon],{radius:4,color:'#ff0000',weight:1,opacity:.8}).addTo(clickMarkers);
 
@@ -371,7 +423,8 @@ map.flyTo([lat, lon], TARGET_ZOOM, { animate: true, duration: 0.8 });
       interactive: false
     }).addTo(clickMarkers);
     setTimeout(() => { try { clickMarkers.removeLayer(ping); } catch(_) {} }, 1000);
-  });
+});
+
 
   
 /* 관측점 편집창 열기 */

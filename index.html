@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>패스파인더-공중·해상 표적 추적 프로그램</title>
+  <title>패스파인더 - 공중·해상 표적 추적 프로그램</title>
 
   
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -310,6 +310,21 @@ a:hover {
 .btn-link:hover {
   background:#aaa;   
 }
+
+.leaflet-control.coord-hud {
+  background: #0b1220;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.35);
+  min-width: 220px;
+  line-height: 1.35;
+  font-size: 13px;
+}
+.coord-hud .hud-line {
+  white-space: nowrap;
+}
   </style>
 
   
@@ -445,7 +460,7 @@ a:hover {
         <div class="row">
           <div class="field"><span class="label">이름</span><input id="obsName" placeholder="관측1" /></div>
           <div class="field"><span class="label">방위(°)</span><input id="obsBearing" type="number" value="0" /></div>
-          <div class="field"><span class="label">길이(km)</span><input id="lineKm" type="number" value="200" /></div>
+          <div class="field"><span class="label">길이(km)</span><input id="lineKm" type="number" value="20" /></div>
         </div>
         <div class="row">
           <button id="addObserverBtn">관측점 추가</button>
