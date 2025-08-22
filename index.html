@@ -325,6 +325,43 @@ a:hover {
 .coord-hud .hud-line {
   white-space: nowrap;
 }
+
+.leaflet-bottom.leaflet-right .coord-hud{
+  margin: 0 12px 12px 0;
+}
+
+@media (max-width: 600px){
+  .leaflet-bottom.leaflet-right .coord-hud{
+    margin-bottom: calc(
+      env(safe-area-inset-bottom, 0px)
+      + 10px                             
+      + 8dvh                             
+    );
+  }
+}
+
+
+@media (max-height: 560px){
+  .leaflet-bottom.leaflet-right .coord-hud{
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 8px + 5dvh);
+  }
+}
+
+
+@media (display-mode: standalone){
+  .leaflet-bottom.leaflet-right .coord-hud{
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 768px){
+  .js-mobile-sidebar-animate{
+    transition: transform .25s ease, width .25s ease, font-size .2s ease;
+    will-change: transform, width;
+  }
+}
+
+
   </style>
 
   
