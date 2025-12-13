@@ -180,19 +180,33 @@ function updateHud(lat, lon, elevMeters, {loading=false}={}) {
   }).addTo(map);
 
   L.control.scale().addTo(map);
+  let osmLayer = null;
 
 
 
 /* 지도 레이어 */
 function setGoogleType(type){
-  if (typeof googleLayer.setMapType === 'function') {
-    googleLayer.setMapType(type);
-  } else if (typeof googleLayer.setMapTypeId === 'function') {
-    googleLayer.setMapTypeId(type);
+  if (type === 'osm') {
+    if (googleLayer && map.hasLayer(googleLayer)) map.removeLayer(googleLayer);
+    if (!osmLayer) {
+      osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      });
+    }
+    if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
   } else {
-    try { map.removeLayer(googleLayer); } catch(_) {}
-    googleLayer = L.gridLayer.googleMutant({ type, maxZoom:21 });
-    googleLayer.addTo(map);
+    if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
+    
+    if (typeof googleLayer.setMapType === 'function') {
+      googleLayer.setMapType(type);
+    } else if (typeof googleLayer.setMapTypeId === 'function') {
+      googleLayer.setMapTypeId(type);
+    } else {
+      try { map.removeLayer(googleLayer); } catch(_) {}
+      googleLayer = L.gridLayer.googleMutant({ type, maxZoom:21 });
+      googleLayer.addTo(map);
+    }
   }
   updateTypeButtons(type);
 }
@@ -208,6 +222,7 @@ const TypeControl = L.Control.extend({
       </div>
       <div class="fold-content">
         <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">Hybrid</button></div>
+        <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
         <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div>
         <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div>
         <div class="btn-row"><button class="btn" data-type="satellite">Satellite</button></div>
@@ -1366,6 +1381,11 @@ if (window.map && window.drawLayer){
     document.addEventListener('mousedown', onTouchStart);
     document.addEventListener('mousemove', onTouchMove);
     document.addEventListener('mouseup',   onTouchEnd);
+
+    // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
+    on($('asideToggle'), 'click', toggleCollapsed);
+    on($('asideExpand'), 'click', toggleCollapsed);
+    // ===============================================
 
     // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
     if (window.innerWidth <= 768){
