@@ -221,11 +221,11 @@ const TypeControl = L.Control.extend({
         <span class="chev">▸</span>
       </div>
       <div class="fold-content">
-        <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">Hybrid</button></div>
+        <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">위성 + 지명</button></div>
+        <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
         <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
         <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div>
         <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div>
-        <div class="btn-row"><button class="btn" data-type="satellite">Satellite</button></div>
         <div class="btn-row"><button class="btn" id="btnLocate" title="내 위치로 이동">내 위치</button></div>
       </div>
     `;
@@ -1202,6 +1202,12 @@ if (window.map && window.drawLayer){
     document.body.classList.remove('sidebar-collapsed');
   });
 })();
+
+
+  // 토글 버튼 클릭 핸들러: 현재 상태를 반전시킵니다.
+  function toggleCollapsed() {
+      applyCollapsed(!STATE.isCollapsed);
+  }
 
 /* =========================
    모바일 사이드바 보정 모듈 (추가만)
