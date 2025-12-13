@@ -175,7 +175,7 @@ function updateHud(lat, lon, elevMeters, {loading=false}={}) {
 
   
   let googleLayer = L.gridLayer.googleMutant({
-    type: 'roadmap',  
+    type: 'hybrid',
     maxZoom: 21
   }).addTo(map);
 
@@ -207,10 +207,10 @@ const TypeControl = L.Control.extend({
         <span class="chev">▸</span>
       </div>
       <div class="fold-content">
+        <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">Hybrid</button></div>
         <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div>
         <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div>
         <div class="btn-row"><button class="btn" data-type="satellite">Satellite</button></div>
-        <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">Hybrid</button></div>
         <div class="btn-row"><button class="btn" id="btnLocate" title="내 위치로 이동">내 위치</button></div>
       </div>
     `;
@@ -254,7 +254,7 @@ function updateTypeButtons(active){
     b.classList.toggle('active', b.getAttribute('data-type')===active);
   });
 }
-updateTypeButtons('roadmap'); 
+updateTypeButtons('hybrid');
 
 
   
@@ -273,11 +273,38 @@ updateTypeButtons('roadmap');
 
 
 const TARGET_ZOOM = 11; 
-map.flyTo([lat, lon], TARGET_ZOOM, { animate: true, duration: 0.8 });
+ map.flyTo([lat, lon], TARGET_ZOOM, { animate: true, duration: 0.8 });
+ 
+// === 사용자 요청 2: 지도에 내 위치 표시 ===
+        const latlng = [lat, lon];
+        
+        // 기존 마커/원을 제거
+        if (myLocMarker) map.removeLayer(myLocMarker);
+        if (myLocCircle) map.removeLayer(myLocCircle);
 
-      },
-      (err)=>{
-        if (location.protocol!=='https:' && location.hostname!=='localhost'){
+        // 정확도 서클 추가
+        myLocCircle = L.circle(latlng, acc, {
+          color: '#1a73e8',
+          fillColor: '#1a73e8',
+          fillOpacity: 0.1,
+          weight: 1
+        }).addTo(map);
+
+        // 위치 마커 추가
+        myLocMarker = L.circleMarker(latlng, {
+          radius: 6,
+          weight: 2,
+          color: '#ffffff',
+          fillColor: '#1a73e8',
+          fillOpacity: 1
+        }).addTo(map);
+
+        // 마커에 팝업 바인딩
+        myLocMarker.bindPopup(`<b>내 위치</b><br>정확도: 약 ${Math.round(acc)}m`).openPopup();
+// ==========================================
+
+       },
+       (err)=>{        if (location.protocol!=='https:' && location.hostname!=='localhost'){
           alert('내 위치 사용은 HTTPS(또는 localhost)에서만 동작합니다.');
         } else {
           alert('위치 정보 접근 실패: '+err.message);
@@ -1161,11 +1188,16 @@ if (window.map && window.drawLayer){
   });
 })();
 
-
+/* =========================
+   모바일 사이드바 보정 모듈 (추가만)
+   - 기존 사이드바/버튼/지도 로직은 전혀 수정하지 않음
+   - 모바일에서 사이드바 폭 축소 + 글자 소폭 축소
+   - 좌우 드래그(스와이프)로 접기/펼치기
+   ========================= */
 (function(){
   const STATE = {
-    el: null,
-    isCollapsed: false,
+    el: null,            // 감지된 사이드바 엘리먼트
+    isCollapsed: false,  // 접힘 상태
     startX: 0,
     startY: 0,
     moved: false,
@@ -1211,7 +1243,8 @@ if (window.map && window.drawLayer){
       STATE.el.style.minWidth = '240px';
       STATE.el.style.fontSize = '0.95em'; // 살짝만 축소
       STATE.el.style.transformOrigin = 'left center';
-      
+      // 접힘 상태 반영
+      applyCollapsed(STATE.isCollapsed, /*animate*/false);
     } else {
       // 데스크톱은 우리 보정 해제 (기존 스타일을 따르게)
       STATE.el.classList.remove('js-mobile-sidebar-animate');
@@ -1223,4 +1256,128 @@ if (window.map && window.drawLayer){
     }
   }
 
+  // 접기/펼치기(왼쪽으로 살짝 숨김). 기존 코드/버튼과는 독립적으로 동작.
+  function applyCollapsed(collapsed, animate = true){
+    if (!STATE.el) return;
+    STATE.isCollapsed = collapsed;
+    if (collapsed){
+      // 사이드바 폭의 약 85~90%를 왼쪽으로 밀어 숨김(탭 영역은 조금 남김)
+      const w = STATE.el.getBoundingClientRect().width || 320;
+      const keep = Math.min(36, Math.max(24, Math.round(w * 0.12))); // 손잡이로 남길 너비
+      STATE.el.style.transform = `translateX(-${w - keep}px)`;
+    } else {
+      STATE.el.style.transform = 'translateX(0)';
+    }
+  }
+
+  // 외부에서 호출 가능하도록(필요시)
+  window.__mobileSidebar = {
+    collapse: ()=>applyCollapsed(true),
+    expand:   ()=>applyCollapsed(false),
+    toggle:   ()=>applyCollapsed(!STATE.isCollapsed),
+  };
+
+  // 스와이프 제스처
+  function onTouchStart(ev){
+    if (!STATE.el || window.innerWidth > 768) return;
+    const t = ev.touches ? ev.touches[0] : ev;
+    STATE.startX = t.clientX;
+    STATE.startY = t.clientY;
+    STATE.moved = false;
+
+    const sbRect = STATE.el.getBoundingClientRect();
+    STATE.touchFromEdge = STATE.startX < 20 && STATE.isCollapsed; // 화면 왼쪽 에지에서 시작 → 펼치기 제스처
+    STATE.touchOnSidebar = (
+      STATE.startX >= sbRect.left &&
+      STATE.startX <= sbRect.right &&
+      STATE.startY >= sbRect.top &&
+      STATE.startY <= sbRect.bottom
+    );
+
+    // 사이드바 위에서 시작하면 가로 스와이프 우선(지도 가로 스크롤/드래그와 충돌 최소화)
+    if (STATE.touchOnSidebar) ev.preventDefault();
+  }
+
+  function onTouchMove(ev){
+    if (!STATE.el || window.innerWidth > 768) return;
+    const t = ev.touches ? ev.touches[0] : ev;
+    const dx = t.clientX - STATE.startX;
+    const dy = t.clientY - STATE.startY;
+    if (!STATE.moved && Math.hypot(dx, dy) > 8) STATE.moved = true;
+
+    // 사이드바를 왼쪽/오른쪽으로 따라 움직이는 미리보기(옵션)
+    if (STATE.touchOnSidebar){
+      // 세로 스크롤보다 가로 이동이 크면 우리 제어
+      if (Math.abs(dx) > Math.abs(dy) * 1.2){
+        ev.preventDefault();
+        const w = STATE.el.getBoundingClientRect().width || 320;
+        let tx = Math.min(0, Math.max(-w + 24, dx * 0.6 * (STATE.isCollapsed ? 0 : 1) - (STATE.isCollapsed ? 0 : 0)));
+        // 접힌 상태에서 오른쪽으로 드래그하면 펼치기 쪽으로
+        if (STATE.isCollapsed && dx > 0) tx = Math.min(0, -w + 24 + dx);
+        STATE.el.style.transform = `translateX(${tx}px)`;
+      }
+    }
+  }
+
+  function onTouchEnd(ev){
+    if (!STATE.el || window.innerWidth > 768) return;
+    const t = (ev.changedTouches && ev.changedTouches[0]) || (ev.touches && ev.touches[0]);
+    const endX = t ? t.clientX : STATE.startX;
+    const endY = t ? t.clientY : STATE.startY;
+    const dx = endX - STATE.startX;
+    const dy = endY - STATE.startY;
+
+    const H = Math.abs(dx) > Math.abs(dy) * 1.2; // 수평 제스처 우선
+    const THRESH = 60; // 트리거 임계값(px)
+
+    // 1) 접힌 상태에서 좌측 에지 스와이프 → 펼치기
+    if (STATE.touchFromEdge && H && dx > THRESH){
+      applyCollapsed(false);
+      return;
+    }
+
+    // 2) 열린 상태에서 사이드바 위에서 왼쪽 스와이프 → 접기
+    if (STATE.touchOnSidebar && H && dx < -THRESH && !STATE.isCollapsed){
+      applyCollapsed(true);
+      return;
+    }
+
+    // 3) 너무 작게 움직인 경우, 원래 위치로 복원
+    applyCollapsed(STATE.isCollapsed);
+  }
+
+  function init(){
+    // 사이드바 탐색
+    STATE.el = findSidebarElement();
+    if (!STATE.el) return; // 사이드바가 없는 레이아웃이면 아무것도 안 함
+
+    applyMobileSizing();
+
+    // 화면 회전/리사이즈에 대응
+    window.addEventListener('resize', applyMobileSizing);
+
+    // 터치 제스처 (passive:false 로 가로 스와이프 제어)
+    const opt = { passive: false };
+    document.addEventListener('touchstart', onTouchStart, opt);
+    document.addEventListener('touchmove',  onTouchMove,  opt);
+    document.addEventListener('touchend',   onTouchEnd,   opt);
+
+    // 데스크톱에서도 마우스 드래그로 테스트 가능하게(옵션)
+    document.addEventListener('mousedown', onTouchStart);
+    document.addEventListener('mousemove', onTouchMove);
+    document.addEventListener('mouseup',   onTouchEnd);
+
+    // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
+    if (window.innerWidth <= 768){
+      applyCollapsed(true, false);
+    }
+  }
+
+  // DOM 준비 후 초기화
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
+
