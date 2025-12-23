@@ -8,27 +8,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
 
-
+  <!-- 스타일: UI 색상/레이아웃 정의 -->
 <style>
-
-	/* 제목(h2) 앞의 + / − 아이콘이 터치 가로채지 않게 */
-.pane h2::before,
-.pane h2::after{
-  pointer-events: none;
-}
-
-/* 실제 입력 영역은 항상 터치 가능 */
-.pane-content{
-  pointer-events: auto;
-  position: relative;
-  z-index: 1;
-}
-
-/* 모든 입력 요소 강제 활성화 */
-input, select, textarea, button{
-  pointer-events: auto !important;
-}
-	:root{
+    :root{
       --bg:#0b0f13; --panel:#0f172a; --muted:#94a3b8; --line:#1f2937;
       --text:#e5e7eb; --accent:#4ade80; --panel2:#0c1320;
     }
@@ -191,6 +173,7 @@ aside{
   width: 0; height: 0;          /* Chrome/Safari */
 }
 
+body{ grid-template-columns: 1fr !important; }
 
 aside{
   position: fixed;                                       
@@ -378,15 +361,6 @@ a:hover {
   }
 }
 
-@media (max-width: 768px){
-  aside{
-    touch-action: pan-y;
-  }
-
-  .pane h2{
-    touch-action: manipulation;
-  }
-}
 
   </style>
 
