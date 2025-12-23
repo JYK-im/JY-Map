@@ -1190,6 +1190,24 @@ if (window.map && window.drawLayer){
 })();
 
 
+(function bindSidebarToggle(){
+  const hideBtn = document.getElementById('asideToggle');
+  const showBtn = document.getElementById('asideExpand');
+
+  hideBtn && hideBtn.addEventListener('click', ()=>{
+    document.body.classList.add('sidebar-collapsed');
+  });
+
+  showBtn && showBtn.addEventListener('click', ()=>{
+    document.body.classList.remove('sidebar-collapsed');
+  });
+})();
+
+
+  // 토글 버튼 클릭 핸들러: 현재 상태를 반전시킵니다.
+  function toggleCollapsed() {
+      applyCollapsed(!STATE.isCollapsed);
+  }
 
 /* =========================
    모바일 사이드바 보정 모듈 (추가만)
@@ -1258,17 +1276,6 @@ if (window.map && window.drawLayer){
       STATE.el.style.removeProperty('transform');
     }
   }
-
-function toggleCollapsedUnified(){
-  if (window.innerWidth <= 768){
-    // 모바일: transform 기반
-    applyCollapsed(!STATE.isCollapsed);
-  } else {
-    // 데스크탑: class 기반
-    document.body.classList.toggle('sidebar-collapsed');
-  }
-}
-
 
   // 접기/펼치기(왼쪽으로 살짝 숨김). 기존 코드/버튼과는 독립적으로 동작.
   function applyCollapsed(collapsed, animate = true){
@@ -1382,22 +1389,15 @@ function toggleCollapsedUnified(){
     document.addEventListener('mouseup',   onTouchEnd);
 
     // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
-on($('asideToggle'), 'click', toggleCollapsedUnified);
-on($('asideExpand'), 'click', toggleCollapsedUnified);
+    on($('asideToggle'), 'click', toggleCollapsed);
+    on($('asideExpand'), 'click', toggleCollapsed);
     // ===============================================
 
     // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
-
-if (window.innerWidth <= 768){
-  // DOM/CSS 계산이 끝난 뒤 접힘 적용 (모바일 안정화)
-  requestAnimationFrame(() => {
-    applyCollapsed(true, false);
-  });
-}
-
+    if (window.innerWidth <= 768){
+      applyCollapsed(true, false);
+    }
   }
-
-
 
   // DOM 준비 후 초기화
   if (document.readyState === 'loading'){
