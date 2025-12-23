@@ -1395,7 +1395,9 @@ if (window.map && window.drawLayer){
 
     // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
     if (window.innerWidth <= 768){
-       document.body.classList.add('sidebar-collapsed');
+         STATE.isCollapsed = true;              // ⭐ JS 상태 동기화
+         document.body.classList.add('sidebar-collapsed');
+         applyCollapsed(true, /*animate*/ false);
     }
   }
 
