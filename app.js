@@ -1317,7 +1317,7 @@ if (window.map && window.drawLayer){
     );
 
     // 사이드바 위에서 시작하면 가로 스와이프 우선(지도 가로 스크롤/드래그와 충돌 최소화)
-    if (STATE.touchOnSidebar) ev.preventDefault();
+    
   }
 
   function onTouchMove(ev){
