@@ -224,12 +224,13 @@ const TypeControl = L.Control.extend({
         <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">위성 + 지명</button></div>
         <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
         <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
-        <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div>
-        <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div>
+        
         <div class="btn-row"><button class="btn" id="btnLocate" title="내 위치로 이동">내 위치</button></div>
       </div>
     `;
 
+    // <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div> //
+    // <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div> //
     
     L.DomEvent.disableClickPropagation(box);
     L.DomEvent.disableScrollPropagation(box);
