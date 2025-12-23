@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
 
 
-/* 제목(h2) 앞의 + / − 아이콘이 터치 가로채지 않게 */
+<style>
+
+	/* 제목(h2) 앞의 + / − 아이콘이 터치 가로채지 않게 */
 .pane h2::before,
 .pane h2::after{
   pointer-events: none;
@@ -26,9 +28,7 @@
 input, select, textarea, button{
   pointer-events: auto !important;
 }
-
-<style>
-    :root{
+	:root{
       --bg:#0b0f13; --panel:#0f172a; --muted:#94a3b8; --line:#1f2937;
       --text:#e5e7eb; --accent:#4ade80; --panel2:#0c1320;
     }
