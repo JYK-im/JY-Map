@@ -224,13 +224,12 @@ const TypeControl = L.Control.extend({
         <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">위성 + 지명</button></div>
         <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
         <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
-        
+        <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div>
+        <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div>
         <div class="btn-row"><button class="btn" id="btnLocate" title="내 위치로 이동">내 위치</button></div>
       </div>
     `;
 
-    // <div class="btn-row"><button class="btn" data-type="roadmap">Roadmap</button></div> //
-    // <div class="btn-row"><button class="btn" data-type="terrain">Terrain</button></div> //
     
     L.DomEvent.disableClickPropagation(box);
     L.DomEvent.disableScrollPropagation(box);
@@ -1317,7 +1316,7 @@ if (window.map && window.drawLayer){
     );
 
     // 사이드바 위에서 시작하면 가로 스와이프 우선(지도 가로 스크롤/드래그와 충돌 최소화)
-    
+    if (STATE.touchOnSidebar) ev.preventDefault();
   }
 
   function onTouchMove(ev){
@@ -1396,9 +1395,7 @@ if (window.map && window.drawLayer){
 
     // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
     if (window.innerWidth <= 768){
-         STATE.isCollapsed = true;              // ⭐ JS 상태 동기화
-         document.body.classList.add('sidebar-collapsed');
-         applyCollapsed(true, /*animate*/ false);
+      applyCollapsed(true, false);
     }
   }
 
