@@ -181,6 +181,8 @@ aside{
   transform: translateX(0);                            
   transition: transform 260ms ease;
   z-index: 2000;
+  pointer-events: auto;
+  touch-action: auto;
 }
 
 /* 접힘 상태: 사이드바만 화면 밖으로 슬라이드 */
@@ -267,11 +269,16 @@ body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-lef
 }
 
 #splash-overlay{
-  position: fixed; inset: 0; z-index: 99999;
-  background: #0b1220; display: grid; place-items: center;
-  opacity: 1; pointer-events: none;
-  transition: opacity 0.5s ease;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #0b1220;
+  display: grid;
+  place-items: center;
+  opacity: 1;
+  pointer-events: none;
 }
+
 #splash-overlay .splash-text {
   text-align: center;
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, sans-serif;
