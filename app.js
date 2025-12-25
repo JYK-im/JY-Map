@@ -214,12 +214,12 @@ function setGoogleType(type){
 const TypeControl = L.Control.extend({
   options: { position: 'topright' },
   onAdd: function() {
-    const box = L.DomUtil.create('div', 'leaflet-control custom-box collapsed');
-    box.innerHTML = `
-      <div class="fold-header">
-        <span class="title">지도 모드</span>
-        <span class="chev">▸</span>
-      </div>
+const box = L.DomUtil.create('div', 'leaflet-control custom-box collapsed');
+box.innerHTML = `
+  <div class="fold-header" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; width: max-content;">
+    <span class="title" style="white-space: nowrap;">지도 모드</span>
+    <span class="chev">▸</span>
+  </div>
       <div class="fold-content">
         <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">위성 + 지명</button></div>
         <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
