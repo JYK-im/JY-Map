@@ -69,17 +69,36 @@
     #obsEditPanel .row + .row { margin-top: 8px; }
 
     /* 지도타입/내위치 커스텀 컨트롤 */
-    .leaflet-control.custom-box {
-      background:#0b1220; color:var(--text); border:1px solid var(--line);
-      border-radius:10px; padding:8px; box-shadow:0 4px 12px rgba(0,0,0,.25);
-      display:flex; gap:6px; align-items:center;
-    }
-    .custom-box .btn {
-      font-size:12px; padding:6px 10px; border-radius:8px; border:1px solid var(--line);
-      background:#0b1220; color:var(--text);
-    }
-    .custom-box .btn.active { border-color: var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
-    .leaflet-control.custom-box{ display:block; }
+.leaflet-control.custom-box {
+  background:#0b1220; color:var(--text); border:1px solid var(--line);
+  border-radius:10px; 
+  padding: 4px;                  /* 1. 패딩을 더 줄여서 여백 제거 */
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+  display: block; 
+  
+  /* [핵심 수정] 모바일에서도 강제로 줄이는 설정 */
+  width: fit-content !important; 
+  min-width: 0 !important;       /* 2. 브라우저 기본 최소너비 해제 */
+  max-width: fit-content !important;
+}
+
+.custom-box .btn {
+  font-size:12px; 
+  padding:6px 10px; 
+  border-radius:8px; 
+  border:1px solid var(--line);
+  background:#0b1220; 
+  color:var(--text);
+  
+  /* [추가] 버튼이 옆으로 늘어나지 않게 고정 */
+  width: auto;                   /* 3. 너비를 내용물만큼만 */
+  white-space: nowrap;           /* 글자가 한 줄로만 나오게 함 */
+}
+
+.custom-box .btn.active { 
+  border-color: var(--accent); 
+  box-shadow:0 0 0 1px var(--accent) inset; 
+}eaflet-control.custom-box{ display:block; }
 
 
 
@@ -265,13 +284,27 @@ body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-lef
   .leaflet-control.custom-box{ margin-top: 8px; margin-right: 8px; }
 
   /* 버튼류 터치 간격 확보 */
-  .custom-box .btn, button, input, select{
-    padding: 12px 12px;
-    font-size: 14px;
-  }
+button, input, select {
+  padding: 12px 12px;
+  font-size: 14px;
+}
+/* 지도 모드 버튼만 따로 작게 설정 */
+.custom-box .btn {
+  padding: 8px 12px !important; /* 위아래는 터치하기 좋게 유지, 좌우는 적절히 */
+  width: auto !important;
+}
 
   /* 지도 모드 패널 내부 버튼을 2열 그리드로 (세로 길이 단축) */
-  .custom-box .btn-row{ display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+.custom-box .btn-row { 
+  display: block !important; /* 그리드(2열) 해제 */
+  margin-bottom: 6px; 
+}
+
+/* 추가: 박스 전체 너비를 글자에 맞춤 */
+.leaflet-control.custom-box {
+  width: fit-content !important; 
+  min-width: 0 !important;
+}
   .custom-box .btn-row:has(#btnLocate){ grid-template-columns: 1fr; } /* 내 위치는 한 줄 */
 
   /* 스트리트뷰 제거했더라도 기타 패널이 너무 길면 접힘 기본 */
