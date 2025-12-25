@@ -1367,9 +1367,6 @@ function applyCollapsed(collapsed) {
       applyCollapsed(true);
       return;
     }
-
-    // 3) 너무 작게 움직인 경우, 원래 위치로 복원
-    applyCollapsed(STATE.isCollapsed);
   }
 
   function init(){
