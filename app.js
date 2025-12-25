@@ -225,7 +225,7 @@ const TypeControl = L.Control.extend({
         <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
         <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
 
-        <div class="btn-row"><button class="btn" id="btnLocate" title="내 위치로 이동">내 위치</button></div>
+
       </div>
     `;
 
@@ -251,12 +251,22 @@ const TypeControl = L.Control.extend({
     });
 
     
-    const locBtn = box.querySelector('#btnLocate');
+const locBtn = box.querySelector('#btnLocate');
+if (locBtn) { // if문으로 감싸서 버튼이 있을 때만 작동하게 합니다.
     L.DomEvent.on(locBtn, 'click', (e)=>{
       L.DomEvent.stopPropagation(e); L.DomEvent.preventDefault(e);
       goToMyLocation();
     });
+}
 
+const newLocBtn = document.getElementById('floatingLocateBtn');
+if (newLocBtn) {
+    newLocBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        goToMyLocation();
+    });
+}
     return box;
   }
 });
