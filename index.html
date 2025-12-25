@@ -123,13 +123,14 @@
 .custom-box .btn.active { border-color: var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
 
 /* 전체 사이드바 접기 */
-body.sidebar-collapsed{
-  grid-template-columns: 0 1fr;
-}
-body.sidebar-collapsed aside{
-  border-right: none; overflow: hidden;
+body.sidebar-collapsed {
+  grid-template-columns: 380px 1fr; 
 }
 
+body.sidebar-collapsed aside {
+  transform: translateX(-380px); 
+  border-right: none;
+}
 #asideToggle, #asideExpand {
   position: absolute; 
   right: -28px; 
