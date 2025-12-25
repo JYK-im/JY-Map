@@ -385,6 +385,28 @@ a:hover {
   }
 }
 
+.my-location-fab {
+  position: fixed;   /* 화면에 고정 */
+  right: 15px;       /* 오른쪽 여백 */
+  bottom: 90px;      /* HUD(보통 70px 내외)보다 높게 설정 */
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a73e8;    /* 아이콘 색상 (파란색) */
+  cursor: pointer;
+  z-index: 1000;     /* 다른 요소보다 위에 표시 */
+}
+
+.my-location-fab:active {
+  background: #f0f0f0; /* 눌렀을 때 색상 변화 */
+}
+
 
   </style>
 
@@ -601,6 +623,13 @@ a:hover {
 <main>
 <div id="map"></div>
 </main>
+
+<button id="floatingLocateBtn" type="button" class="my-location-fab">
+  <svg viewBox="0 0 24 24" width="24" height="24">
+    <path fill="currentColor" d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M3.05,13H1V11H3.05C3.5,6.83 6.83,3.5 11,3.05V1H13V3.05C17.17,3.5 20.5,6.83 20.95,11H23V13H20.95C20.5,17.17 17.17,20.5 13,20.95V23H11V20.95C6.83,20.5 3.5,17.17 3.05,13Z" />
+  </svg>
+</button>
+
 
 </body>
 
