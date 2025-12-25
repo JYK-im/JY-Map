@@ -1279,19 +1279,23 @@ if (window.map && window.drawLayer){
     }
   }
 
-  // 접기/펼치기(왼쪽으로 살짝 숨김). 기존 코드/버튼과는 독립적으로 동작.
-  function applyCollapsed(collapsed, animate = true){
-    if (!STATE.el) return;
-    STATE.isCollapsed = collapsed;
-    if (collapsed){
-      // 사이드바 폭의 약 85~90%를 왼쪽으로 밀어 숨김(탭 영역은 조금 남김)
-      const w = STATE.el.getBoundingClientRect().width || 320;
-      const keep = Math.min(36, Math.max(24, Math.round(w * 0.12))); // 손잡이로 남길 너비
-      STATE.el.style.transform = `translateX(-${w - keep}px)`;
-    } else {
-      STATE.el.style.transform = 'translateX(0)';
-    }
+function applyCollapsed(collapsed) {
+  if (!STATE.el) return;
+  STATE.isCollapsed = !!collapsed;
+
+  if (STATE.isCollapsed) {
+    STATE.el.classList.add('collapsed');         // 사이드바 자체에 클래스 추가
+    document.body.classList.add('sidebar-collapsed'); // ★ body에도 클래스 추가 (레이아웃 변경용)
+  } else {
+    STATE.el.classList.remove('collapsed');
+    document.body.classList.remove('sidebar-collapsed');
   }
+
+  // 지도가 있다면 크기 재조정 (사이드바가 사라지면 지도가 넓어져야 하므로)
+  if (window.map) {
+    setTimeout(() => window.map.invalidateSize(), 350); 
+  }
+}
 
   // 외부에서 호출 가능하도록(필요시)
   window.__mobileSidebar = {
