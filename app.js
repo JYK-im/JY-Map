@@ -1379,17 +1379,6 @@ function applyCollapsed(collapsed) {
     // 화면 회전/리사이즈에 대응
     window.addEventListener('resize', applyMobileSizing);
 
-    // 터치 제스처 (passive:false 로 가로 스와이프 제어)
-    const opt = { passive: false };
-    document.addEventListener('touchstart', onTouchStart, opt);
-    document.addEventListener('touchmove',  onTouchMove,  opt);
-    document.addEventListener('touchend',   onTouchEnd,   opt);
-
-    // 데스크톱에서도 마우스 드래그로 테스트 가능하게(옵션)
-    document.addEventListener('mousedown', onTouchStart);
-    document.addEventListener('mousemove', onTouchMove);
-    document.addEventListener('mouseup',   onTouchEnd);
-
     // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
     on($('asideToggle'), 'click', toggleCollapsed);
     on($('asideExpand'), 'click', toggleCollapsed);
