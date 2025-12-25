@@ -1212,15 +1212,12 @@ if (window.map && window.drawLayer){
   }
 
 /* =========================
-   모바일 사이드바 보정 모듈 (추가만)
-   - 기존 사이드바/버튼/지도 로직은 전혀 수정하지 않음
-   - 모바일에서 사이드바 폭 축소 + 글자 소폭 축소
-   - 좌우 드래그(스와이프)로 접기/펼치기
+   모바일 사이드바 보정 모듈
    ========================= */
 (function(){
   const STATE = {
-    el: null,            // 감지된 사이드바 엘리먼트
-    isCollapsed: false,  // 접힘 상태
+    el: null,
+    isCollapsed: true,
     startX: 0,
     startY: 0,
     moved: false,
