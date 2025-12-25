@@ -131,16 +131,32 @@ body.sidebar-collapsed aside{
 }
 
 #asideToggle, #asideExpand {
-  position: absolute; right: -14px; top: 50%;
+  position: absolute; 
+  right: -28px; 
+  top: 50%;
   transform: translateY(-50%);
-  width: 28px; height: 64px; border-radius: 12px;
+  width: 28px; 
+  height: 64px; 
+  border-radius: 12px;
   border: 1px solid var(--line); background: #0b1220; color: var(--text);
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 12px rgba(0,0,0,.25); cursor: pointer; z-index: 2001;
 }
 
 #asideExpand{
-  left: -14px; right: auto;
+  right: -28px; 
+  left: auto;
+}
+
+/* 사이드바가 열려있을 때 그리기도구 위치 */
+.leaflet-left {
+  left: 390px !important; /* 사이드바 폭(380px) + 여백(10px) */
+  transition: left 260ms ease; /* 사이드바와 동일한 애니메이션 속도 */
+}
+
+/* 사이드바가 접혔을 때 그리기도구 위치 */
+body.sidebar-collapsed .leaflet-left {
+  left: 10px !important;
 }
 
 #asideToggle{ display: flex; }
@@ -578,11 +594,10 @@ a:hover {
     </div>
 
   <button id="asideToggle" type="button" title="사이드바 숨기기"></button>
+  <button id="asideExpand" type="button" title="사이드바 보이기"></button>
   </aside>
 
-  <main>
-  <button id="asideExpand" type="button" title="사이드바 보이기"></button>
-    <!-- 지도 컨테이너: Leaflet 지도가 렌더링되는 영역 -->
+<main>
 <div id="map"></div>
 </main>
 
