@@ -487,9 +487,19 @@ a:hover {
 <aside>
     <div class="pane">
 <h2> Path Finder</h2>
-<a href="history.html" class="btn-link">주요기능 설명(클릭)</a>
+      <div class="pane-content">
+        <div class="row">
+          <div class="field">
+
+<div align="center"><a href="history.html" class="btn-link">주요기능 설명(클릭)</a></div>
 	</div>
-    <div class="pane">
+	</div>
+	</div>
+	</div>
+
+
+
+        <div class="pane collapsed" aria-expanded="false">
       <h2>좌표 모드</h2>
       <div class="pane-content">
         <div class="row">
@@ -525,6 +535,7 @@ a:hover {
       </div>
     </div>
 
+
     <div class="pane">
       <h2>바람 경로 예측</h2>
       <div class="pane-content">
@@ -547,11 +558,10 @@ a:hover {
         <div class="row">
           <div class="field"><span class="label">예측 시간(분)</span><input id="driftMinutes" type="number" value="60"></div>
           <div class="field"><span class="label">표시 간격(분)</span><input id="markerIntervalMin" type="number" value="1"></div>
-          <div class="field"><span class="label">스텝(초)</span><input id="stepSeconds" type="number" value="60"></div>
-        </div>
-        <div class="row">
-          <div class="field"><span class="label">재조회 주기(초)</span><input id="refreshSec" type="number" value="0"></div>
-          <div class="field"><span class="label">가속 계수</span><input id="accelFactor" type="number" value="1"></div>
+          <div id="stepSeconds" type="number" value="60"></div>
+
+          <div id="refreshSec" type="number" value="0"></div>
+          <div id="accelFactor" type="number" value="1"></div>
           <div class="field"><span class="label">고도</span>
             <select id="windSource">
               <option value="10m">10 m</option>
@@ -562,7 +572,6 @@ a:hover {
           </div>
         </div>
         <div class="row">
-          <button id="pickStartBtn">지도에서 시작점 선택</button>
           <button id="runWindSim">예상 경로 계산</button>
           <button id="clearDrift">경로 삭제</button>
         </div>
@@ -574,8 +583,8 @@ a:hover {
       <h2>교차점 계산</h2>
       <div class="pane-content">
         <div class="row">
-          <div class="field"><span class="label">이름</span><input id="obsName" placeholder="관측1" /></div>
-          <div class="field"><span class="label">방위(°)</span><input id="obsBearing" type="number" value="0" /></div>
+          <div class="field"><span class="label">관측점 이름</span><input id="obsName" placeholder="관측점1" /></div>
+          <div class="field"><span class="label">방위각(°)</span><input id="obsBearing" type="number" value="0" /></div>
           <div class="field"><span class="label">길이(km)</span><input id="lineKm" type="number" value="20" /></div>
         </div>
         <div class="row">
@@ -591,8 +600,8 @@ a:hover {
         <div id="obsEditPanel" hidden>
           <div class="help" style="margin-bottom:6px">선택한 관측점을 편집합니다.</div>
           <div class="row">
-            <div class="field"><span class="label">이름</span><input id="editName" /></div>
-            <div class="field"><span class="label">방위(°)</span><input id="editBearing" type="number" /></div>
+            <div class="field"><span class="label">관측점 이름</span><input id="editName" /></div>
+            <div class="field"><span class="label">방위각(°)</span><input id="editBearing" type="number" /></div>
             <div class="field"><span class="label">길이(km)</span><input id="editLineKm" type="number" /></div>
           </div>
           <div class="row mgrs-only">
