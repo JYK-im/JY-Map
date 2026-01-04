@@ -1383,8 +1383,16 @@ function applyCollapsed(collapsed) {
 
     applyMobileSizing();
 
-    // 화면 회전/리사이즈에 대응
-    window.addEventListener('resize', applyMobileSizing);
+    let lastWidth = window.innerWidth; 
+
+window.addEventListener('resize', () => {
+  const currentWidth = window.innerWidth;
+  
+  if (currentWidth === lastWidth) return;
+  
+  lastWidth = currentWidth;
+  applyMobileSizing();
+});
 
     // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
     on($('asideToggle'), 'click', toggleCollapsed);
