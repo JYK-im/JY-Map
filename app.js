@@ -138,11 +138,15 @@
   const toCourse = (fromDeg)=> (fromDeg+180)%360;
 
   
-const map = L.map('map',{zoomControl:false}).setView([37.5665,126.9780], 8);
+  const map = L.map('map',{zoomControl:false}).setView([37.5665,126.9780], 8);
 
-L.control.zoom({
-  position: 'bottomright'
+const zoom = L.control.zoom({
+  position:'bottomright'
 }).addTo(map);
+
+document
+  .getElementById('zoomControlWrapper')
+  .appendChild(zoom.getContainer());
 
 
 let hudAltEl = null, hudCoordEl = null;
