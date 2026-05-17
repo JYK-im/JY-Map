@@ -137,8 +137,7 @@
   }
   const toCourse = (fromDeg)=> (fromDeg+180)%360;
 
-map.addControl(new HudControl());
-  
+
   const map = L.map('map',{
   zoomControl:false
 }).setView([37.5665,126.9780], 8);
@@ -147,6 +146,7 @@ L.control.zoom({
   position: 'bottomright'
 }).addTo(map);
 
+  map.addControl(new HudControl());
 
 let hudAltEl = null, hudCoordEl = null;
 let lastKnownElevation = NaN;
