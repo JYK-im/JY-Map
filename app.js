@@ -142,6 +142,8 @@
   zoomControl:false
 }).setView([37.5665,126.9780], 8);
 
+map.addControl(new HudControl());
+
 L.control.zoom({
   position: 'bottomright'
 }).addTo(map);
@@ -166,7 +168,7 @@ const HudControl = L.Control.extend({
     return div;
   }
 });
-map.addControl(new HudControl());
+
 
 function updateHud(lat, lon, elevMeters, {loading=false}={}) {
   if (hudAltEl) {
