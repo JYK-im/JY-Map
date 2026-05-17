@@ -440,45 +440,6 @@ a:hover {
   background: #f0f0f0; /* 눌렀을 때 색상 변화 */
 }
 
-/* 오른손 조작 기준: 우측 하단 버튼 정리 */
-.leaflet-bottom.leaflet-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-/* 확대/축소 버튼이 HUD와 너무 붙지 않게 */
-.leaflet-bottom.leaflet-right .leaflet-control-zoom {
-  margin: 0 12px 0 0;
-}
-
-/* HUD 위치 정리 */
-.leaflet-bottom.leaflet-right .coord-hud {
-  margin: 0 12px 12px 0;
-}
-
-/* 내 위치 버튼은 확대/축소 버튼보다 위쪽으로 */
-.my-location-fab {
-  right: 15px;
-  bottom: 150px;
-}
-
-/* 모바일에서는 손가락 터치 영역 조금 키우기 */
-@media (max-width: 768px) {
-  .leaflet-control-zoom a {
-    width: 42px !important;
-    height: 42px !important;
-    line-height: 42px !important;
-    font-size: 22px !important;
-  }
-
-  .my-location-fab {
-    width: 48px;
-    height: 48px;
-    bottom: 160px;
-  }
-}
 
   </style>
 
