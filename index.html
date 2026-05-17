@@ -98,7 +98,7 @@
 .custom-box .btn.active { 
   border-color: var(--accent); 
   box-shadow:0 0 0 1px var(--accent) inset; 
-}eaflet-control.custom-box{ display:block; }
+.leaflet-control.custom-box{ display:block; }
 
 
 
@@ -558,10 +558,10 @@ a:hover {
         <div class="row">
           <div class="field"><span class="label">예측 시간(분)</span><input id="driftMinutes" type="number" value="60"></div>
           <div class="field"><span class="label">표시 간격(분)</span><input id="markerIntervalMin" type="number" value="1"></div>
-          <div id="stepSeconds" type="number" value="60"></div>
+<input id="stepSeconds" type="hidden" value="60" />
 
-          <div id="refreshSec" type="number" value="0"></div>
-          <div id="accelFactor" type="number" value="1"></div>
+<input id="refreshSec" type="hidden" value="0" />
+<input id="accelFactor" type="hidden" value="1" />
           <div class="field"><span class="label">고도</span>
             <select id="windSource">
               <option value="10m">10 m</option>
