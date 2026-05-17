@@ -137,16 +137,9 @@
   }
   const toCourse = (fromDeg)=> (fromDeg+180)%360;
 
-
-  const map = L.map('map',{
-  zoomControl:false
-}).setView([37.5665,126.9780], 8);
-
-L.control.zoom({
-  position: 'bottomright'
-}).addTo(map);
   
-  map.addControl(new HudControl());
+  const map = L.map('map',{zoomControl:true}).setView([37.5665,126.9780], 8);
+
 
 let hudAltEl = null, hudCoordEl = null;
 let lastKnownElevation = NaN;
@@ -167,9 +160,8 @@ const HudControl = L.Control.extend({
     return div;
   }
 });
+map.addControl(new HudControl());
 
-
-  
 function updateHud(lat, lon, elevMeters, {loading=false}={}) {
   if (hudAltEl) {
     hudAltEl.textContent = '고도: ' + (loading
