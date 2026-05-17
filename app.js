@@ -142,10 +142,6 @@
   zoomControl:false
 }).setView([37.5665,126.9780], 8);
 
-L.control.zoom({
-  position: 'bottomright'
-}).addTo(map);
-
   map.addControl(new HudControl());
 
 let hudAltEl = null, hudCoordEl = null;
@@ -168,7 +164,10 @@ const HudControl = L.Control.extend({
   }
 });
 
-
+L.control.zoom({
+  position: 'bottomright'
+}).addTo(map);
+  
 function updateHud(lat, lon, elevMeters, {loading=false}={}) {
   if (hudAltEl) {
     hudAltEl.textContent = '고도: ' + (loading
