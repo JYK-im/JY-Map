@@ -418,30 +418,50 @@ a:hover {
   }
 }
 
-.my-location-fab {
+.right-bottom-ui{
   position: fixed;
-  right: 15px;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 180px);
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1a73e8;    /* 아이콘 색상 (파란색) */
-  cursor: pointer;
-  z-index: 1000;     /* 다른 요소보다 위에 표시 */
+  right: 14px;
+  bottom: 14px;
+  z-index: 1200;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
 }
 
-.my-location-fab:active {
-  background: #f0f0f0; /* 눌렀을 때 색상 변화 */
+/* 공통 버튼 스타일 */
+.map-btn,
+.leaflet-control-zoom{
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
 }
 
-.leaflet-bottom.leaflet-right .leaflet-control-zoom {
-  margin: 0 12px 92px 0;
+/* 내 위치 버튼 */
+.map-btn{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  border:1px solid var(--line);
+
+  background:#0b1220;
+  color:#fff;
+
+  font-size:20px;
+  cursor:pointer;
+}
+
+/* 줌컨트롤 */
+.leaflet-control-zoom{
+  margin:0 !important;
+}
+
+/* HUD 위치 */
+.leaflet-bottom.leaflet-right .coord-hud{
+  margin:
+    0
+    14px
+    140px
+    0 !important;
 }
 
   </style>
@@ -670,6 +690,14 @@ a:hover {
 
 <main>
 <div id="map"></div>
+<div class="right-bottom-ui">
+  <button id="floatingLocateBtn" class="map-btn">
+    ⦿
+  </button>
+
+  <div id="zoomControlWrapper"></div>
+</div>
+
 </main>
 
 <button id="floatingLocateBtn" type="button" class="my-location-fab">
