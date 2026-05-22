@@ -477,8 +477,8 @@ const TARGET_ZOOM = 11;
     }
 
     const radiusKm = 5;          // 분석 반경
-    const angleStep = 5;         // 부채꼴 각도 간격
-    const distanceStepKm = 0.25; // 거리 간격: 250m
+    const angleStep = 2;         // 부채꼴 각도 간격
+    const distanceStepKm = 0.1; // 거리 간격: 100m
 
     const samples = buildViewshedSamplePoints(
       baseLat,
@@ -515,14 +515,28 @@ const TARGET_ZOOM = 11;
       let maxSlope = -Infinity;
 
       linePoints.forEach(p => {
-        const slope = (p.elevation - baseElev) / (p.dist * 1000);
+const observerHeightM = 1.7;  // 관측자 눈높이
+const targetHeightM = 1.5;    // 목표물 높이
+const earthRadiusM = 6371000;
+const refractionFactor = 0.13;
 
-        const visible = slope >= maxSlope;
+const distM = p.dist * 1000;
 
-        if (visible) {
-          maxSlope = slope;
-        }
+// 지구 곡률 보정값
+const curvatureDropM = (distM * distM) / (2 * earthRadiusM) * (1 - refractionFactor);
 
+// 관측자 눈높이와 목표물 높이 반영
+const observerElev = baseElev + observerHeightM;
+const targetElev = p.elevation + targetHeightM - curvatureDropM;
+
+// 기준점에서 목표점까지의 시선 기울기
+const slope = (targetElev - observerElev) / distM;
+
+const visible = slope >= maxSlope;
+
+if (visible) {
+  maxSlope = slope;
+}
         const bearing2 = bearing + angleStep;
         const dist1 = Math.max(0.02, p.dist - distanceStepKm);
         const dist2 = p.dist;
