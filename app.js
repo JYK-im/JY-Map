@@ -1543,9 +1543,9 @@ function applyCollapsed(collapsed) {
   }
 
   function init(){
-    // 사이드바 탐색
+    
     STATE.el = findSidebarElement();
-    if (!STATE.el) return; // 사이드바가 없는 레이아웃이면 아무것도 안 함
+    if (!STATE.el) return; 
 
     applyMobileSizing();
 
@@ -1560,18 +1560,16 @@ window.addEventListener('resize', () => {
   applyMobileSizing();
 });
 
-    // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
     on($('asideToggle'), 'click', toggleCollapsed);
     on($('asideExpand'), 'click', toggleCollapsed);
-    // ===============================================
-
-    // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
+    
+    
     if (window.innerWidth <= 768){
       applyCollapsed(true, false);
     }
   }
 
-  // DOM 준비 후 초기화
+  
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);
   } else {
