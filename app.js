@@ -375,6 +375,165 @@ const TARGET_ZOOM = 11;
   const defaultColor = '#4ade80';
   const defaultLabel = '도형';
   map.addControl(drawControl);
+
+  // === 가시선 분석 레이어 ===
+  const viewshedLayer = L.layerGroup().addTo(map);
+
+  async function getElevationList(latlngs){
+    if (!window.google || !google.maps) {
+      alert('구글 고도 서비스를 사용할 수 없습니다.');
+      return [];
+    }
+
+    window.__elevService = window.__elevService || new google.maps.ElevationService();
+
+    const out = [];
+    const chunkSize = 250;
+
+    for (let i = 0; i < latlngs.length; i += chunkSize) {
+      const chunk = latlngs.slice(i, i + chunkSize).map(p => ({
+        lat: p.lat,
+        lng: p.lng
+      }));
+
+      const part = await new Promise((resolve) => {
+        window.__elevService.getElevationForLocations(
+          { locations: chunk },
+          (results, status) => {
+            if (status === 'OK' && results) resolve(results);
+            else resolve([]);
+          }
+        );
+      });
+
+      out.push(...part);
+    }
+
+    return out;
+  }
+
+  function createViewshedDiamondPoints(centerLat, centerLon, radiusKm, stepKm){
+    const points = [];
+
+    for (let y = -radiusKm; y <= radiusKm; y += stepKm) {
+      for (let x = -radiusKm; x <= radiusKm; x += stepKm) {
+        if (Math.abs(x) + Math.abs(y) > radiusKm) continue;
+
+        let p = turf.point([centerLon, centerLat]);
+
+        if (y !== 0) {
+          p = turf.destination(p, Math.abs(y), y >= 0 ? 0 : 180, {units:'kilometers'});
+        }
+
+        if (x !== 0) {
+          p = turf.destination(p, Math.abs(x), x >= 0 ? 90 : 270, {units:'kilometers'});
+        }
+
+        points.push({
+          lat: p.geometry.coordinates[1],
+          lng: p.geometry.coordinates[0]
+        });
+      }
+    }
+
+    return points;
+  }
+
+  async function runViewshedAnalysis(){
+    if (!lastClickLatLng) {
+      alert('먼저 지도에서 기준 지점을 클릭하세요.');
+      return;
+    }
+
+    viewshedLayer.clearLayers();
+
+    const baseLat = lastClickLatLng.lat;
+    const baseLon = lastClickLatLng.lng;
+
+    let baseElev = lastKnownElevation;
+
+    if (!isFinite(baseElev)) {
+      const baseResult = await getElevationList([{lat:baseLat, lng:baseLon}]);
+      if (!baseResult.length || typeof baseResult[0].elevation !== 'number') {
+        alert('기준 지점 고도를 가져오지 못했습니다.');
+        return;
+      }
+      baseElev = baseResult[0].elevation;
+      lastKnownElevation = baseElev;
+      updateHud(baseLat, baseLon, baseElev);
+    }
+
+    const radiusKm = 5;     // 표시 범위: 5km
+    const stepKm = 0.5;     // 촘촘함: 500m 간격
+
+    const samplePoints = createViewshedDiamondPoints(baseLat, baseLon, radiusKm, stepKm);
+    const elevations = await getElevationList(samplePoints);
+
+    for (let i = 0; i < elevations.length; i++) {
+      const r = elevations[i];
+      if (!r || !r.location || typeof r.elevation !== 'number') continue;
+
+      const lat = r.location.lat();
+      const lon = r.location.lng();
+      const elev = r.elevation;
+
+      const isHigher = elev > baseElev;
+
+      L.circleMarker([lat, lon], {
+        radius: 5,
+        stroke: false,
+        fillColor: isHigher ? '#ef4444' : '#22c55e',
+        fillOpacity: 0.55
+      })
+      .bindTooltip(
+        `${isHigher ? '높음' : '낮음/보임'} · ${Math.round(elev)}m`,
+        {sticky:true}
+      )
+      .addTo(viewshedLayer);
+    }
+
+    L.marker([baseLat, baseLon])
+      .bindPopup(`<b>가시선 기준점</b><br>고도: ${Math.round(baseElev)}m`)
+      .addTo(viewshedLayer);
+  }
+
+  const ViewshedControl = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd: function(){
+      const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
+      div.innerHTML = `
+        <a href="#" id="runViewshedBtn" title="가시선 분석">시</a>
+        <a href="#" id="clearViewshedBtn" title="가시선 삭제">×</a>
+      `;
+
+      L.DomEvent.disableClickPropagation(div);
+      L.DomEvent.disableScrollPropagation(div);
+
+      setTimeout(() => {
+        const runBtn = document.getElementById('runViewshedBtn');
+        const clearBtn = document.getElementById('clearViewshedBtn');
+
+        if (runBtn) {
+          runBtn.onclick = (e) => {
+            e.preventDefault();
+            runViewshedAnalysis();
+          };
+        }
+
+        if (clearBtn) {
+          clearBtn.onclick = (e) => {
+            e.preventDefault();
+            viewshedLayer.clearLayers();
+          };
+        }
+      }, 0);
+
+      return div;
+    }
+  });
+
+  map.addControl(new ViewshedControl());
+
   map.on(L.Draw.Event.CREATED, (e)=>{
     const layer = e.layer;
     drawLayer.addLayer(layer);
@@ -384,7 +543,6 @@ const TARGET_ZOOM = 11;
       if (typeof saveDrawnShapes === 'function') saveDrawnShapes();
     }, 0);
   });
-
   
   const coordMode=$('coordMode'), toggleLabels=$('toggleLabels');
   const obsLat=$('obsLat'), obsLon=$('obsLon'), obsMGRS=$('obsMGRS');
