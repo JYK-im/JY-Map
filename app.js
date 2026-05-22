@@ -576,8 +576,8 @@ if (visible) {
       const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
 
       div.innerHTML = `
-        <a href="#" id="runViewshedBtn" title="가시선 분석">시</a>
-        <a href="#" id="clearViewshedBtn" title="가시선 삭제">×</a>
+        <a href="#" id="runViewshedBtn" title="가시선 분석">🎯</a>
+        <a href="#" id="clearViewshedBtn" title="가시선 삭제">❎</a>
       `;
 
       L.DomEvent.disableClickPropagation(div);
