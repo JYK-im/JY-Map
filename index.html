@@ -51,7 +51,7 @@
     }
     .label-box.hover { opacity:1; box-shadow:0 0 4px rgba(0,0,0,.4); }
 
-    /* 사이드바 접이식 */
+    
     .pane { padding:0; }
     .pane h2{
       font-size:17px; font-weight:700; margin:0; padding:12px 16px; cursor:pointer;
@@ -64,21 +64,18 @@
     .pane h2 .chev{ margin-left:auto; transition:transform .2s ease; opacity:.8; }
     .pane.collapsed h2 .chev{ transform:rotate(-90deg); }
 
-    /* 관측점 편집 패널 스타일 */
     #obsEditPanel { border:1px solid var(--line); border-radius:12px; padding:10px; background:#0b1220; }
     #obsEditPanel .row + .row { margin-top: 8px; }
 
-    /* 지도타입/내위치 커스텀 컨트롤 */
 .leaflet-control.custom-box {
   background:#0b1220; color:var(--text); border:1px solid var(--line);
   border-radius:10px; 
-  padding: 4px;                  /* 1. 패딩을 더 줄여서 여백 제거 */
+  padding: 4px;                  
   box-shadow:0 4px 12px rgba(0,0,0,.25);
   display: block; 
   
-  /* [핵심 수정] 모바일에서도 강제로 줄이는 설정 */
   width: fit-content !important; 
-  min-width: 0 !important;       /* 2. 브라우저 기본 최소너비 해제 */
+  min-width: 0 !important;       
   max-width: fit-content !important;
 }
 
@@ -90,9 +87,8 @@
   background:#0b1220; 
   color:var(--text);
   
-  /* [추가] 버튼이 옆으로 늘어나지 않게 고정 */
-  width: auto;                   /* 3. 너비를 내용물만큼만 */
-  white-space: nowrap;           /* 글자가 한 줄로만 나오게 함 */
+  width: auto;                   
+  white-space: nowrap;           
 }
 
 .custom-box .btn.active { 
@@ -141,7 +137,6 @@
 }
 .custom-box .btn.active { border-color: var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
 
-/* 전체 사이드바 접기 */
 body.sidebar-collapsed {
   grid-template-columns: 380px 1fr; 
 }
@@ -168,13 +163,11 @@ body.sidebar-collapsed aside {
   left: auto;
 }
 
-/* 사이드바가 열려있을 때 그리기도구 위치 */
 .leaflet-left {
-  left: 10px !important; /* 사이드바 폭(380px) + 여백(10px) */
-  transition: left 260ms ease; /* 사이드바와 동일한 애니메이션 속도 */
+  left: 10px !important; 
+  transition: left 260ms ease; 
 }
 
-/* 사이드바가 접혔을 때 그리기도구 위치 */
 body.sidebar-collapsed .leaflet-left {
   left: 10px !important;
 }
@@ -186,9 +179,7 @@ body.sidebar-collapsed #asideExpand{ display: flex; }
 
 #asideToggle::after{ content: "‹"; font-size: 18px; font-weight: 700; }
 #asideExpand::after{ content: "›"; font-size: 18px; font-weight: 700; }
-/* 전체 사이드바 접기 */
 
-/* 사이드바 제목 왼쪽에 +/− 아이콘 표시 */
 .pane h2{ position:relative; padding-left:28px; }
 .pane h2::before{
   content:"−"; position:absolute; left:10px; top:50%;
@@ -206,7 +197,7 @@ aside{
   overflow: auto;
 }
 .aside-scroll::-webkit-scrollbar{
-  width: 0; height: 0;          /* Chrome/Safari */
+  width: 0; height: 0;          
 }
 
 body{ grid-template-columns: 1fr !important; }
@@ -221,49 +212,44 @@ aside{
   touch-action: auto;
 }
 
-/* 접힘 상태: 사이드바만 화면 밖으로 슬라이드 */
 body.sidebar-collapsed aside{
   transform: translateX(-100%);
-  /* border-right/overflow는 기존 값 유지해도 무방 */
+  
 }
 
-/* 우측 중앙 핸들 위치는 fixed 사이드바 기준으로 동일하게 동작 */
-#asideToggle{ right: -14px; }      /* 필요시 -16, -18 등 미세 조정 */
+#asideToggle{ right: -14px; }      
 
-/* 그리기도구(좌측 상단 컨테이너)가 사이드바를 따라다니도록 */
 .leaflet-control-container .leaflet-top.leaflet-left{
   left: 12px;
   transition: left 260ms ease;
 }
 
-/* 사이드바가 열려 있을 때: 사이드바 너비(380) + 간격(12) 만큼 우측으로 이동 */
 body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-left{
-  left: 392px;                /* 380 + 12 */
+  left: 392px;                
 }
 
-/* ===== 모바일 최적화 (<= 768px) ===== */
 @media (max-width: 768px){
 
-  /* 사이드바: 전체 화면 오버레이로 넓게 */
+  
   aside{
     width: calc(100vw - 16px);
-    height: 100dvh; /* iOS 안전영역 대응 */
+    height: 100dvh; 
     padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   }
 
-  /* 사이드바 제목 터치 영역 확대 */
+  
   .pane h2{
     font-size: 16px;
-    padding: 14px 16px 14px 32px; /* +/− 아이콘 공간 */
+    padding: 14px 16px 14px 32px; 
   }
 
-  /* 사이드바 접기/펼치기 버튼(핸들) 터치 크기 업 */
+  
   #asideToggle, #asideExpand{
     width: 36px; height: 72px; border-radius: 14px;
   }
   #asideToggle::after, #asideExpand::after{ font-size: 20px; }
 
-  /* 내부 스크롤: 스크롤은 되되 바는 숨김(모바일 미려) */
+  
   .aside-scroll{
     height: 100%;
     overflow: auto;
@@ -272,47 +258,44 @@ body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-lef
   }
   .aside-scroll::-webkit-scrollbar{ width:0; height:0; }
 
-  /* 지도 컨트롤(좌상단) 사이드바 따라 이동 — 기존 392px → 모바일 폭 기준 계산 */
+  
   .leaflet-control-container .leaflet-top.leaflet-left{
     left: 12px; transition: left 260ms ease;
   }
   body:not(.sidebar-collapsed) .leaflet-control-container .leaflet-top.leaflet-left{
-    left: calc(100vw - 16px + 12px); /* aside width + 여백 */
+    left: calc(100vw - 16px + 12px); 
   }
 
-  /* 우측 상단(지도 모드 박스)이 너무 겹치면 약간 안쪽으로 */
+  
   .leaflet-control.custom-box{ margin-top: 8px; margin-right: 8px; }
 
-  /* 버튼류 터치 간격 확보 */
+  
 button, input, select {
   padding: 12px 12px;
   font-size: 14px;
 }
-/* 지도 모드 버튼만 따로 작게 설정 */
 .custom-box .btn {
-  padding: 8px 12px !important; /* 위아래는 터치하기 좋게 유지, 좌우는 적절히 */
+  padding: 8px 12px !important; 
   width: auto !important;
 }
 
-  /* 지도 모드 패널 내부 버튼을 2열 그리드로 (세로 길이 단축) */
+  
 .custom-box .btn-row { 
-  display: block !important; /* 그리드(2열) 해제 */
+  display: block !important; 
   margin-bottom: 6px; 
 }
 
-/* 추가: 박스 전체 너비를 글자에 맞춤 */
 .leaflet-control.custom-box {
   width: fit-content !important; 
   min-width: 0 !important;
 }
-  .custom-box .btn-row:has(#btnLocate){ grid-template-columns: 1fr; } /* 내 위치는 한 줄 */
+  .custom-box .btn-row:has(#btnLocate){ grid-template-columns: 1fr; } 
 
-  /* 스트리트뷰 제거했더라도 기타 패널이 너무 길면 접힘 기본 */
+  
   .pane{ border-bottom: 1px solid var(--line); }
   .pane:not(.collapsed) .pane-content{ padding-bottom: 12px; }
 }
 
-/* 초소형 기기(<= 390px)에서 여백 조금 더 작게 */
 @media (max-width: 390px){
   body{ font-size: 14px; }
   .pane h2{ font-size: 15px; }
@@ -418,7 +401,6 @@ a:hover {
   }
 }
 
-/* 확대/축소 버튼: HUD 위쪽 */
 .right-bottom-ui{
   position: fixed;
   right: 14px;
@@ -431,7 +413,6 @@ a:hover {
   gap:10px;
 }
 
-/* 내 위치 버튼만 좌측 하단 유지 */
 #floatingLocateBtn{
   position: fixed;
   left: 14px;
@@ -439,13 +420,11 @@ a:hover {
   z-index: 1200;
 }
 
-/* 공통 버튼 스타일 */
 .map-btn,
 .leaflet-control-zoom{
   box-shadow:0 4px 12px rgba(0,0,0,.25);
 }
 
-/* 내 위치 버튼 */
 .map-btn{
   width:48px;
   height:48px;
@@ -459,12 +438,10 @@ a:hover {
   cursor:pointer;
 }
 
-/* 줌컨트롤 */
 .leaflet-control-zoom{
   margin:0 !important;
 }
 
-/* HUD 위치: 우측 하단 아래쪽 */
 .leaflet-bottom.leaflet-right .coord-hud{
   margin:
     0
@@ -473,7 +450,6 @@ a:hover {
     0 !important;
 }
 
-/* 줌 버튼 위치 */
 .leaflet-bottom.leaflet-right .leaflet-control-zoom{
   margin-bottom: 90px !important;
 }
@@ -719,7 +695,6 @@ a:hover {
 </body>
 
 <script>
-/* 탭 타이틀 마키(흐름) 효과 — 길어진 제목을 순환 스크롤 */
 (function(){
   const base = "Path Finder - 공중·해상 표적 추적 프로그램";
   const gap  = "   •   ";
