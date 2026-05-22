@@ -23,7 +23,6 @@
     return best;
   }
 
-/* MGRS 표기 포맷 */
   function formatMGRSDisplay(s){
     if (!s) return '';
     const t = s.replace(/\s+/g, '').toUpperCase();
@@ -62,7 +61,6 @@
     return null;
   }
 
-/* 좌표 라벨 포맷 (위경도/MGRS) */
   function formatCoordLabel(lat, lon){
     const mode = (document.body?.dataset?.coordMode) || 'MGRS';
     if (mode === 'MGRS'){
@@ -73,21 +71,18 @@
   }
 
   
-/* 바람: 풍향/풍속 → U/V 벡터 */
   function dirSpeedToUV(dirDeg, speed) {
     const rad = (dirDeg || 0) * Math.PI / 180;
     const u = -speed * Math.sin(rad);
     const v = -speed * Math.cos(rad);
     return {u, v};
   }
-/* 바람: U/V → 풍향/풍속 */
   function uvToDirSpeed(u, v) {
     const speed = Math.hypot(u, v);
     let deg = (Math.atan2(-u, -v) * 180 / Math.PI);
     if (deg < 0) deg += 360;
     return {dir: deg, speed};
   }
-/* 바람 필드 2D 선형보간 */
   function bilinearUV(lon, lat, bbox, corners, hourIdx) {
     const {minLat, maxLat, minLon, maxLon} = bbox;
     const tx = (lon - minLon) / (maxLon - minLon);
@@ -110,7 +105,6 @@
 
     return {u, v};
   }
-/* 시간 포함 보간 (바람) */
   function bilinearUVAtTime(lon, lat, grid, hourFloat){
     const base = (grid && typeof grid.baseIdx==='number') ? grid.baseIdx : 0;
     const abs = base + hourFloat;
@@ -125,7 +119,6 @@
       v: uv_i.v * (1 - f) + uv_i2.v * f
     };
   }
-/* 풍하중 이동 시뮬레이션 한 스텝 진행 */
   function stepForward(lat,lon, bearingDeg, speedMS, dtSec){
     const R=6371000;
     const br = bearingDeg*Math.PI/180;
@@ -192,7 +185,6 @@ function updateHud(lat, lon, elevMeters, {loading=false}={}) {
 
 
 
-/* 지도 레이어 */
 function setGoogleType(type){
   if (type === 'osm') {
     if (googleLayer && map.hasLayer(googleLayer)) map.removeLayer(googleLayer);
@@ -260,7 +252,7 @@ box.innerHTML = `
 
     
 const locBtn = box.querySelector('#btnLocate');
-if (locBtn) { // if문으로 감싸서 버튼이 있을 때만 작동하게 합니다.
+if (locBtn) { 
     L.DomEvent.on(locBtn, 'click', (e)=>{
       L.DomEvent.stopPropagation(e); L.DomEvent.preventDefault(e);
       goToMyLocation();
@@ -281,7 +273,6 @@ if (newLocBtn) {
 map.addControl(new TypeControl());
 
 
-/* 지도 타입 버튼 UI 갱신 */
 function updateTypeButtons(active){
   const node = document.querySelector('.leaflet-control.custom-box');
   if (!node) return;
@@ -294,7 +285,6 @@ updateTypeButtons('hybrid');
 
   
   let myLocMarker=null, myLocCircle=null;
-/* 내 위치로 이동 (Geolocation) */
   function goToMyLocation(){
     if (!navigator.geolocation){
       alert('이 브라우저는 위치 정보를 지원하지 않습니다.');
@@ -310,14 +300,13 @@ updateTypeButtons('hybrid');
 const TARGET_ZOOM = 11; 
  map.flyTo([lat, lon], TARGET_ZOOM, { animate: true, duration: 0.8 });
  
-// === 사용자 요청 2: 지도에 내 위치 표시 ===
+
         const latlng = [lat, lon];
         
-        // 기존 마커/원을 제거
+
         if (myLocMarker) map.removeLayer(myLocMarker);
         if (myLocCircle) map.removeLayer(myLocCircle);
 
-        // 정확도 서클 추가
         myLocCircle = L.circle(latlng, acc, {
           color: '#1a73e8',
           fillColor: '#1a73e8',
@@ -325,7 +314,7 @@ const TARGET_ZOOM = 11;
           weight: 1
         }).addTo(map);
 
-        // 위치 마커 추가
+
         myLocMarker = L.circleMarker(latlng, {
           radius: 6,
           weight: 2,
@@ -334,9 +323,9 @@ const TARGET_ZOOM = 11;
           fillOpacity: 1
         }).addTo(map);
 
-        // 마커에 팝업 바인딩
+
         myLocMarker.bindPopup(`<b>내 위치</b><br>정확도: 약 ${Math.round(acc)}m`).openPopup();
-// ==========================================
+
 
        },
        (err)=>{        if (location.protocol!=='https:' && location.hostname!=='localhost'){
@@ -376,7 +365,6 @@ const TARGET_ZOOM = 11;
   const defaultLabel = '도형';
   map.addControl(drawControl);
 
-  // === 가시선 분석 레이어 ===
   const viewshedLayer = L.layerGroup().addTo(map);
 
   async function getElevationList(latlngs){
@@ -463,8 +451,6 @@ const TARGET_ZOOM = 11;
     const baseLat = lastClickLatLng.lat;
     const baseLon = lastClickLatLng.lng;
 
-    // 가시선 분석 시에는 클릭 HUD 캐시값을 믿지 않고,
-// 현재 기준점 좌표의 고도를 다시 조회합니다.
 let baseElev = NaN;
 
 const baseResult = await getElevationList([{lat:baseLat, lng:baseLon}]);
@@ -529,22 +515,20 @@ linePoints.forEach(p => {
 
   const observerElev = baseElev + observerHeightM;
 
-  // 장애물로 판단할 지형 높이
+
   const terrainElev = p.elevation - curvatureDropM;
 
-  // 목표물 높이
+
   const targetElev = p.elevation + targetHeightM - curvatureDropM;
 
   const terrainSlope = (terrainElev - observerElev) / distM;
   const targetSlope = (targetElev - observerElev) / distM;
 
-  // 고도 데이터 오차 허용값: m 단위
   const visibilityToleranceM = 2;
   const toleranceSlope = visibilityToleranceM / distM;
 
   const visible = targetSlope >= (maxSlope - toleranceSlope);
 
-  // 중요: 보이든 안 보이든 앞 지형은 뒤쪽 시야를 가릴 수 있어야 함
   if (terrainSlope > maxSlope) {
     maxSlope = terrainSlope;
   }
@@ -740,15 +724,12 @@ if (coordMode){
 });
 
 
-  
-/* 관측점 편집창 열기 */
   function openObserverEditor(o){
     selectedObserver = o;
     if (!obsEditPanel) return;
     obsEditPanel.hidden = false;
     fillEditPanel(o);
   }
-/* 편집창에 현재 관측점 값 채우기 */
   function fillEditPanel(o){
     if (!obsEditPanel || !o) return;
     if (editName) editName.value = o.name || '';
@@ -761,7 +742,7 @@ if (coordMode){
       if (editMGRS) editMGRS.value = formatMGRSDisplay(toMGRS(o.lat, o.lon));
     }
   }
-/* 관측점 편집창 닫기 */
+
   function closeObserverEditor(){
     if (obsEditPanel) obsEditPanel.hidden = true;
     selectedObserver = null;
@@ -810,23 +791,23 @@ if (coordMode){
   });
 
   
-/* 관측점 툴팁 HTML 구성 */
+
   function getObserverTooltip(o){
     return `${o.name||'관측'} · ${formatCoordLabel(o.lat, o.lon)}`;
   }
-/* 관측점 레이어에 툴팁 바인딩 */
+
   function bindObserverTooltip(marker, o){
     const txt = getObserverTooltip(o);
     const tt = marker.getTooltip && marker.getTooltip();
     if (tt && tt.setContent) tt.setContent(txt);
     else marker.bindTooltip(txt, { direction:'top', sticky:true });
   }
-/* 관측점 툴팁 갱신 */
+
   function refreshObserverTooltips(){
     if (!Array.isArray(observers)) return;
     observers.forEach(o=>{ if (o.marker) bindObserverTooltip(o.marker, o); });
   }
-/* 교차점 툴팁 바인딩 */
+
   function bindCrossTooltip(marker){
     const ll = marker.getLatLng();
     const txt = `교차점 · ${formatCoordLabel(ll.lat, ll.lng)}`;
@@ -834,12 +815,11 @@ if (coordMode){
     if (tt && tt.setContent) tt.setContent(txt);
     else marker.bindTooltip(txt, { direction:'top', sticky:true });
   }
-/* 교차점 툴팁 갱신 */
+
   function refreshCrossTooltips(){
     crossLayer.eachLayer(m => bindCrossTooltip(m));
   }
 
-/* 지도 클릭 위치 하이라이트 스타일 주입 */
   function ensureClickPingStyles(){
     if (document.getElementById('click-ping-styles')) return;
     const css = `
@@ -858,7 +838,6 @@ if (coordMode){
     const style=document.createElement('style'); style.id='click-ping-styles'; style.textContent=css; document.head.appendChild(style);
   }
 
-/* 레이어 라벨 제거 유틸 */
 function removeLabelForLayer(layer){
   if (layer && layer._labelMarker) {
     try { map.removeLayer(layer._labelMarker); } catch(_) {}
@@ -880,7 +859,6 @@ drawLayer.on('layerremove', (e)=>{
 
 
   
-/* 관측점 추가 (입력/지도클릭) */
   function addObserver(o){
     const marker = L.marker([o.lat,o.lon],{draggable:true}).addTo(obsLayer);
     marker.bindTooltip(o.name||'관측', {permanent: !!(toggleLabels&&toggleLabels.checked), direction:'top', offset:[0,-10]});
@@ -894,7 +872,6 @@ drawLayer.on('layerremove', (e)=>{
     o.marker=marker;
     drawObsLine(o);
   }
-/* 관측점에서 방위각/거리 라인 그리기 */
   function drawObsLine(o){
     if (o.line){ try{ lineLayer.removeLayer(o.line); }catch(_){ } o.line=null; }
     const distKm = Math.max(0, o.lineKm||20);
@@ -906,7 +883,6 @@ drawLayer.on('layerremove', (e)=>{
     if (toggleLabels&&toggleLabels.checked) l.bindTooltip(o.name||'방위선', {permanent:true, direction:'center'});
     o.line=l;
   }
-/* 관측점 전체 렌더링 */
   function renderObservers(){
     const list = $('observerList');
     if (!list) return;
@@ -943,7 +919,6 @@ drawLayer.on('layerremove', (e)=>{
   on($('recomputeX'),'click', ()=> recalcIntersections());
 
   
-/* 역지오코딩 캐시 키 생성 */
   function reverseGeocodeKey(lat,lon){ return `${lat.toFixed(5)},${lon.toFixed(5)}`; }
   async function reverseGeocode(lat,lon){
     const key=reverseGeocodeKey(lat,lon);
@@ -957,7 +932,6 @@ drawLayer.on('layerremove', (e)=>{
     }catch(e){ return ''; }
   }
 
-/* 관측선 간 교차점 계산 및 표시 */
   function recalcIntersections(){
     crossLayer.clearLayers();
     const list = $('crossList'); if (list) list.innerHTML='';
@@ -994,11 +968,10 @@ drawLayer.on('layerremove', (e)=>{
   on($('clearXRemoved'),'click', ()=>{ removedIntersections=new Set(); recalcIntersections(); });
 
   
-/* 도형/마커 편집 가능 상태 연결 */
   function attachEditable(layer){
     layer.on('click', ()=> openStylePopup(layer, {name: layer.options && layer.options._label || '도형'}));
   }
-/* 선택 레이어 스타일/라벨 팝업 */
+
   function openStylePopup(layer) {
     const currentColor = layer.options.color || '#4ade80';
     const currentFill = layer.options.fillColor || '#4ade80';
@@ -1045,7 +1018,6 @@ drawLayer.on('layerremove', (e)=>{
       });
     }, 0);
   }
-/* 레이어 라벨 추가 */
   function addLabelToLayer(layer, name) {
     if (!name || (!layer.getCenter && !layer.getLatLng)) return;
     const textColor = layer.options._labelColor || "#000000";
@@ -1078,7 +1050,6 @@ drawLayer.on('layerremove', (e)=>{
       if (typeof saveDrawnShapes === 'function') saveDrawnShapes();
     });
   }
-/* 스타일/라벨 적용 */
   function applyStyleAndLabel(layer, color, labelText) {
     try{
       layer.setStyle && layer.setStyle({ color, fillColor: color, weight: layer.options?.weight ?? 2, opacity:1, fillOpacity:0.5 });
@@ -1092,10 +1063,8 @@ drawLayer.on('layerremove', (e)=>{
       if (layer._labelMarker) { map.removeLayer(layer._labelMarker); layer._labelMarker = null; }
     }
   }
-/* 모든 라벨 갱신 */
   function refreshAllLabels(){
     const show = !!(toggleLabels && toggleLabels.checked);
-/* 선택 레이어에 함수 적용 */
     function applyToLayer(layer){
       const label = layer.options && layer.options._label;
       if (label && show){
@@ -1144,7 +1113,6 @@ drawLayer.on('layerremove', (e)=>{
     ]);
 
     const Lmin = Math.min(nwS.spd.length, neS.spd.length, swS.spd.length, seS.spd.length);
-/* API 결과를 U/V 시계열로 변환 */
     function toUVSeries(s){
       const u=[], v=[];
       for (let i=0;i<Lmin;i++){
@@ -1164,16 +1132,13 @@ drawLayer.on('layerremove', (e)=>{
     const bbox = { minLat: se.lat, maxLat: ne.lat, minLon: nw.lon, maxLon: ne.lon };
     return {corners, bbox};
   }
-/* 이동경로(드리프트) 초기화 */
   function clearDriftPath(){
     driftLayer.clearLayers();
     const wm = $('windMeta'); if (wm) wm.textContent = '—';
     driftMinuteMarkers = [];
   }
   on(clearDrift,'click', clearDriftPath);
-/* 분 단위 타임마커 툴팁 포맷 */
   function formatMinuteTooltip(minute, lat, lon){ return `${minute}분 · ${formatCoordLabel(lat, lon)}`; }
-/* 타임마커 툴팁 갱신 */
   function refreshMinuteMarkerTooltips(){
     if (!Array.isArray(driftMinuteMarkers)) return;
     for (const mk of driftMinuteMarkers){
@@ -1301,7 +1266,6 @@ drawLayer.on('layerremove', (e)=>{
   on(clearShapes,'click', ()=> { drawLayer.clearLayers(); if (typeof saveDrawnShapes === 'function') saveDrawnShapes(); });
 
   
-/* 앱 상태 스냅샷 저장 */
   function snapshot(){
     return {
       coordMode: document.body.dataset.coordMode||'MGRS',
@@ -1310,7 +1274,6 @@ drawLayer.on('layerremove', (e)=>{
       reverseCache: Array.from(reverseCache.entries())
     };
   }
-/* 스냅샷에서 복원 */
   function restore(s){
     setBodyMode(s.coordMode||'MGRS');
     const modeSel = $('coordMode'); if (modeSel) modeSel.value = s.coordMode||'MGRS';
@@ -1351,7 +1314,6 @@ drawLayer.on('layerremove', (e)=>{
 })();
 
 
-/* 그려진 도형 저장(LocalStorage) */
 function saveDrawnShapes(){
   if (!window.drawLayer) return;
   const features = [];
@@ -1370,7 +1332,6 @@ function saveDrawnShapes(){
   });
   localStorage.setItem('drawnShapes', JSON.stringify(features));
 }
-/* 저장된 도형 로드 */
 function loadDrawnShapes(){
   if (!window.drawLayer || !window.map || typeof window.applyStyleAndLabel !== 'function' || typeof window.attachEditable !== 'function') return;
   const raw = localStorage.getItem('drawnShapes');
@@ -1467,14 +1428,10 @@ if (window.map && window.drawLayer){
 })();
 
 
-  // 토글 버튼 클릭 핸들러: 현재 상태를 반전시킵니다.
   function toggleCollapsed() {
       applyCollapsed(!STATE.isCollapsed);
   }
 
-/* =========================
-   모바일 사이드바 보정 모듈
-   ========================= */
 (function(){
   const STATE = {
     el: null,
@@ -1486,7 +1443,7 @@ if (window.map && window.drawLayer){
     touchOnSidebar: false,
   };
 
-  // 사이드바 후보를 자동 탐색 (기존 구조 변경하지 않음)
+  
   function findSidebarElement(){
     const candidates = [
       '[data-role="sidebar"]',
@@ -1501,7 +1458,6 @@ if (window.map && window.drawLayer){
     for (const sel of candidates){
       const el = document.querySelector(sel);
       if (!el) continue;
-      // 화면의 왼쪽에 붙어 있고(또는 고정) 지도 옆을 차지하는 큰 패널일 확률이 높음
       const rect = el.getBoundingClientRect();
       if (rect.width > 120 && rect.x < window.innerWidth * 0.4){
         return el;
@@ -1510,24 +1466,20 @@ if (window.map && window.drawLayer){
     return null;
   }
 
-  // 모바일에서 보기 좋게 사이즈/폰트 조정 (폭과 글자 살짝 줄임)
+
   function applyMobileSizing(){
     if (!STATE.el) return;
     const isMobile = window.innerWidth <= 768;
     if (isMobile){
-      // 스타일을 "추가"만 하고, 기존 인라인/클래스는 건드리지 않음
       STATE.el.classList.add('js-mobile-sidebar-animate');
-      // 폭: 글자 길이에 따라 자연스럽게 보이도록 상한/하한
-      const targetWidthVW = 62; // 필요하면 55~70 사이 미세조정 가능
+      const targetWidthVW = 62; 
       STATE.el.style.width = `min(${targetWidthVW}vw, ${Math.max(280, Math.min(window.innerWidth * 0.9, 420))}px)`;
       STATE.el.style.maxWidth = '85vw';
       STATE.el.style.minWidth = '240px';
-      STATE.el.style.fontSize = '0.95em'; // 살짝만 축소
+      STATE.el.style.fontSize = '0.95em'; 
       STATE.el.style.transformOrigin = 'left center';
-      // 접힘 상태 반영
       applyCollapsed(STATE.isCollapsed, /*animate*/false);
     } else {
-      // 데스크톱은 우리 보정 해제 (기존 스타일을 따르게)
       STATE.el.classList.remove('js-mobile-sidebar-animate');
       STATE.el.style.removeProperty('width');
       STATE.el.style.removeProperty('max-width');
@@ -1542,27 +1494,25 @@ function applyCollapsed(collapsed) {
   STATE.isCollapsed = !!collapsed;
 
   if (STATE.isCollapsed) {
-    STATE.el.classList.add('collapsed');         // 사이드바 자체에 클래스 추가
-    document.body.classList.add('sidebar-collapsed'); // ★ body에도 클래스 추가 (레이아웃 변경용)
+    STATE.el.classList.add('collapsed');         
+    document.body.classList.add('sidebar-collapsed'); 
   } else {
     STATE.el.classList.remove('collapsed');
     document.body.classList.remove('sidebar-collapsed');
   }
 
-  // 지도가 있다면 크기 재조정 (사이드바가 사라지면 지도가 넓어져야 하므로)
   if (window.map) {
     setTimeout(() => window.map.invalidateSize(), 350); 
   }
 }
 
-  // 외부에서 호출 가능하도록(필요시)
+
   window.__mobileSidebar = {
     collapse: ()=>applyCollapsed(true),
     expand:   ()=>applyCollapsed(false),
     toggle:   ()=>applyCollapsed(!STATE.isCollapsed),
   };
 
-  // 스와이프 제스처
   function onTouchStart(ev){
     if (!STATE.el || window.innerWidth > 768) return;
     const t = ev.touches ? ev.touches[0] : ev;
@@ -1571,7 +1521,7 @@ function applyCollapsed(collapsed) {
     STATE.moved = false;
 
     const sbRect = STATE.el.getBoundingClientRect();
-    STATE.touchFromEdge = STATE.startX < 20 && STATE.isCollapsed; // 화면 왼쪽 에지에서 시작 → 펼치기 제스처
+    STATE.touchFromEdge = STATE.startX < 20 && STATE.isCollapsed; 
     STATE.touchOnSidebar = (
       STATE.startX >= sbRect.left &&
       STATE.startX <= sbRect.right &&
@@ -1589,14 +1539,13 @@ function applyCollapsed(collapsed) {
     const dy = t.clientY - STATE.startY;
     if (!STATE.moved && Math.hypot(dx, dy) > 8) STATE.moved = true;
 
-    // 사이드바를 왼쪽/오른쪽으로 따라 움직이는 미리보기(옵션)
+
     if (STATE.touchOnSidebar){
-      // 세로 스크롤보다 가로 이동이 크면 우리 제어
       if (Math.abs(dx) > Math.abs(dy) * 1.2){
         ev.preventDefault();
         const w = STATE.el.getBoundingClientRect().width || 320;
         let tx = Math.min(0, Math.max(-w + 24, dx * 0.6 * (STATE.isCollapsed ? 0 : 1) - (STATE.isCollapsed ? 0 : 0)));
-        // 접힌 상태에서 오른쪽으로 드래그하면 펼치기 쪽으로
+        
         if (STATE.isCollapsed && dx > 0) tx = Math.min(0, -w + 24 + dx);
         STATE.el.style.transform = `translateX(${tx}px)`;
       }
@@ -1611,16 +1560,16 @@ function applyCollapsed(collapsed) {
     const dx = endX - STATE.startX;
     const dy = endY - STATE.startY;
 
-    const H = Math.abs(dx) > Math.abs(dy) * 1.2; // 수평 제스처 우선
-    const THRESH = 60; // 트리거 임계값(px)
+    const H = Math.abs(dx) > Math.abs(dy) * 1.2; 
+    const THRESH = 60; 
 
-    // 1) 접힌 상태에서 좌측 에지 스와이프 → 펼치기
+
     if (STATE.touchFromEdge && H && dx > THRESH){
       applyCollapsed(false);
       return;
     }
 
-    // 2) 열린 상태에서 사이드바 위에서 왼쪽 스와이프 → 접기
+
     if (STATE.touchOnSidebar && H && dx < -THRESH && !STATE.isCollapsed){
       applyCollapsed(true);
       return;
@@ -1628,9 +1577,8 @@ function applyCollapsed(collapsed) {
   }
 
   function init(){
-    // 사이드바 탐색
     STATE.el = findSidebarElement();
-    if (!STATE.el) return; // 사이드바가 없는 레이아웃이면 아무것도 안 함
+    if (!STATE.el) return; 
 
     applyMobileSizing();
 
@@ -1645,18 +1593,14 @@ window.addEventListener('resize', () => {
   applyMobileSizing();
 });
 
-    // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
     on($('asideToggle'), 'click', toggleCollapsed);
     on($('asideExpand'), 'click', toggleCollapsed);
-    // ===============================================
 
-    // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
     if (window.innerWidth <= 768){
       applyCollapsed(true, false);
     }
   }
 
-  // DOM 준비 후 초기화
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);
   } else {
