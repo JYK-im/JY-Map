@@ -463,18 +463,20 @@ const TARGET_ZOOM = 11;
     const baseLat = lastClickLatLng.lat;
     const baseLon = lastClickLatLng.lng;
 
-    let baseElev = lastKnownElevation;
+    // 가시선 분석 시에는 클릭 HUD 캐시값을 믿지 않고,
+// 현재 기준점 좌표의 고도를 다시 조회합니다.
+let baseElev = NaN;
 
-    if (!isFinite(baseElev)) {
-      const baseResult = await getElevationList([{lat:baseLat, lng:baseLon}]);
-      if (!baseResult.length || typeof baseResult[0].elevation !== 'number') {
-        alert('기준 지점 고도를 가져오지 못했습니다.');
-        return;
-      }
-      baseElev = baseResult[0].elevation;
-      lastKnownElevation = baseElev;
-      updateHud(baseLat, baseLon, baseElev);
-    }
+const baseResult = await getElevationList([{lat:baseLat, lng:baseLon}]);
+
+if (!baseResult.length || typeof baseResult[0].elevation !== 'number') {
+  alert('기준 지점 고도를 가져오지 못했습니다.');
+  return;
+}
+
+baseElev = baseResult[0].elevation;
+lastKnownElevation = baseElev;
+updateHud(baseLat, baseLon, baseElev);
 
     const radiusKm = 5;          // 분석 반경
     const angleStep = 2;         // 부채꼴 각도 간격
