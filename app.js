@@ -161,8 +161,12 @@ const HudControl = L.Control.extend({
     return div;
   }
 });
-map.addControl(new HudControl());
+const hud = new HudControl();
+const hudEl = hud.onAdd(map);
 
+document
+  .getElementById('zoomControlWrapper')
+  .appendChild(hudEl);
 function updateHud(lat, lon, elevMeters, {loading=false}={}) {
   if (hudAltEl) {
     hudAltEl.textContent = '고도: ' + (loading
