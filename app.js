@@ -514,37 +514,43 @@ updateHud(baseLat, baseLon, baseElev);
     byBearing.forEach((linePoints, bearing) => {
       linePoints.sort((a, b) => a.dist - b.dist);
 
-      let maxSlope = -Infinity;
+let maxSlope = -Infinity;
 
-      linePoints.forEach(p => {
-const observerHeightM = 1.7;  // 관측자 눈높이
-const targetHeightM = 1.5;    // 목표물 높이
-const earthRadiusM = 6371000;
-const refractionFactor = 0.13;
+linePoints.forEach(p => {
+  const observerHeightM = 1.7;
+  const targetHeightM = 1.5;
+  const earthRadiusM = 6371000;
+  const refractionFactor = 0.13;
 
-const distM = p.dist * 1000;
+  const distM = p.dist * 1000;
 
-// 지구 곡률 보정값
-const curvatureDropM = (distM * distM) / (2 * earthRadiusM) * (1 - refractionFactor);
+  const curvatureDropM =
+    (distM * distM) / (2 * earthRadiusM) * (1 - refractionFactor);
 
-// 관측자 눈높이와 목표물 높이 반영
-const observerElev = baseElev + observerHeightM;
-const targetElev = p.elevation + targetHeightM - curvatureDropM;
+  const observerElev = baseElev + observerHeightM;
 
-// 기준점에서 목표점까지의 시선 기울기
-const slope = (targetElev - observerElev) / distM;
+  // 장애물로 판단할 지형 높이
+  const terrainElev = p.elevation - curvatureDropM;
 
-// DEM 오차 허용값
-const slopeMargin = 0.01;
+  // 목표물 높이
+  const targetElev = p.elevation + targetHeightM - curvatureDropM;
 
-// 기존 최고 시선보다 아주 조금 낮아도 보이는 것으로 처리
-const visible = slope >= (maxSlope - slopeMargin);
+  const terrainSlope = (terrainElev - observerElev) / distM;
+  const targetSlope = (targetElev - observerElev) / distM;
 
-if (slope > maxSlope) {
-  maxSlope = slope;
-}        const bearing2 = bearing + angleStep;
-        const dist1 = Math.max(0.02, p.dist - distanceStepKm);
-        const dist2 = p.dist;
+  // 고도 데이터 오차 허용값: m 단위
+  const visibilityToleranceM = 2;
+  const toleranceSlope = visibilityToleranceM / distM;
+
+  const visible = targetSlope >= (maxSlope - toleranceSlope);
+
+  // 중요: 보이든 안 보이든 앞 지형은 뒤쪽 시야를 가릴 수 있어야 함
+  if (terrainSlope > maxSlope) {
+    maxSlope = terrainSlope;
+  }
+        const bearing2 = bearing + angleStep;
+const dist1 = Math.max(0, p.dist - distanceStepKm);
+const dist2 = p.dist;
 
         const polygonLatLngs = makeSectorPolygon(
           baseLat,
