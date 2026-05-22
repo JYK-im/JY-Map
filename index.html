@@ -442,16 +442,20 @@ a:hover {
   margin:0 !important;
 }
 
-.leaflet-bottom.leaflet-right .coord-hud{
-  margin:
-    0
-    14px
-    14px
-    0 !important;
+#zoomControlWrapper{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:10px;
 }
 
+#zoomControlWrapper .coord-hud{
+  margin:0 !important;
+}
+
+.leaflet-bottom.leaflet-right .coord-hud,
 .leaflet-bottom.leaflet-right .leaflet-control-zoom{
-  margin-bottom: 90px !important;
+  margin:0 !important;
 }
 
 
