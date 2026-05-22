@@ -412,24 +412,21 @@ const TARGET_ZOOM = 11;
     return out;
   }
 
-  function createViewshedDiamondPoints(centerLat, centerLon, radiusKm, stepKm){
+  function buildViewshedSamplePoints(baseLat, baseLon, radiusKm, angleStep, distanceStepKm){
     const points = [];
 
-    for (let y = -radiusKm; y <= radiusKm; y += stepKm) {
-      for (let x = -radiusKm; x <= radiusKm; x += stepKm) {
-        if (Math.abs(x) + Math.abs(y) > radiusKm) continue;
-
-        let p = turf.point([centerLon, centerLat]);
-
-        if (y !== 0) {
-          p = turf.destination(p, Math.abs(y), y >= 0 ? 0 : 180, {units:'kilometers'});
-        }
-
-        if (x !== 0) {
-          p = turf.destination(p, Math.abs(x), x >= 0 ? 90 : 270, {units:'kilometers'});
-        }
+    for (let bearing = 0; bearing < 360; bearing += angleStep) {
+      for (let dist = distanceStepKm; dist <= radiusKm; dist += distanceStepKm) {
+        const p = turf.destination(
+          turf.point([baseLon, baseLat]),
+          dist,
+          bearing,
+          {units:'kilometers'}
+        );
 
         points.push({
+          bearing,
+          dist,
           lat: p.geometry.coordinates[1],
           lng: p.geometry.coordinates[0]
         });
@@ -437,6 +434,22 @@ const TARGET_ZOOM = 11;
     }
 
     return points;
+  }
+
+  function makeSectorPolygon(baseLat, baseLon, bearing1, bearing2, dist1, dist2){
+    const center = turf.point([baseLon, baseLat]);
+
+    const p1 = turf.destination(center, dist1, bearing1, {units:'kilometers'});
+    const p2 = turf.destination(center, dist2, bearing1, {units:'kilometers'});
+    const p3 = turf.destination(center, dist2, bearing2, {units:'kilometers'});
+    const p4 = turf.destination(center, dist1, bearing2, {units:'kilometers'});
+
+    return [
+      [p1.geometry.coordinates[1], p1.geometry.coordinates[0]],
+      [p2.geometry.coordinates[1], p2.geometry.coordinates[0]],
+      [p3.geometry.coordinates[1], p3.geometry.coordinates[0]],
+      [p4.geometry.coordinates[1], p4.geometry.coordinates[0]]
+    ];
   }
 
   async function runViewshedAnalysis(){
@@ -463,44 +476,91 @@ const TARGET_ZOOM = 11;
       updateHud(baseLat, baseLon, baseElev);
     }
 
-    const radiusKm = 5;     // 표시 범위: 5km
-    const stepKm = 0.5;     // 촘촘함: 500m 간격
+    const radiusKm = 5;          // 분석 반경
+    const angleStep = 5;         // 부채꼴 각도 간격
+    const distanceStepKm = 0.25; // 거리 간격: 250m
 
-    const samplePoints = createViewshedDiamondPoints(baseLat, baseLon, radiusKm, stepKm);
-    const elevations = await getElevationList(samplePoints);
+    const samples = buildViewshedSamplePoints(
+      baseLat,
+      baseLon,
+      radiusKm,
+      angleStep,
+      distanceStepKm
+    );
 
-    for (let i = 0; i < elevations.length; i++) {
+    const elevations = await getElevationList(samples);
+
+    const byBearing = new Map();
+
+    for (let i = 0; i < samples.length; i++) {
+      const s = samples[i];
       const r = elevations[i];
-      if (!r || !r.location || typeof r.elevation !== 'number') continue;
 
-      const lat = r.location.lat();
-      const lon = r.location.lng();
-      const elev = r.elevation;
+      if (!r || typeof r.elevation !== 'number') continue;
 
-      const isHigher = elev > baseElev;
+      if (!byBearing.has(s.bearing)) byBearing.set(s.bearing, []);
 
-      L.circleMarker([lat, lon], {
-        radius: 5,
-        stroke: false,
-        fillColor: isHigher ? '#ef4444' : '#22c55e',
-        fillOpacity: 0.55
-      })
-      .bindTooltip(
-        `${isHigher ? '높음' : '낮음/보임'} · ${Math.round(elev)}m`,
-        {sticky:true}
-      )
-      .addTo(viewshedLayer);
+      byBearing.get(s.bearing).push({
+        bearing: s.bearing,
+        dist: s.dist,
+        lat: s.lat,
+        lng: s.lng,
+        elevation: r.elevation
+      });
     }
 
-    L.marker([baseLat, baseLon])
-      .bindPopup(`<b>가시선 기준점</b><br>고도: ${Math.round(baseElev)}m`)
-      .addTo(viewshedLayer);
+    byBearing.forEach((linePoints, bearing) => {
+      linePoints.sort((a, b) => a.dist - b.dist);
+
+      let maxSlope = -Infinity;
+
+      linePoints.forEach(p => {
+        const slope = (p.elevation - baseElev) / (p.dist * 1000);
+
+        const visible = slope >= maxSlope;
+
+        if (visible) {
+          maxSlope = slope;
+        }
+
+        const bearing2 = bearing + angleStep;
+        const dist1 = Math.max(0.02, p.dist - distanceStepKm);
+        const dist2 = p.dist;
+
+        const polygonLatLngs = makeSectorPolygon(
+          baseLat,
+          baseLon,
+          bearing,
+          bearing2,
+          dist1,
+          dist2
+        );
+
+        L.polygon(polygonLatLngs, {
+          color: visible ? '#22c55e' : '#ef4444',
+          weight: 0,
+          fillColor: visible ? '#22c55e' : '#ef4444',
+          fillOpacity: 0.32
+        }).addTo(viewshedLayer);
+      });
+    });
+
+    L.circleMarker([baseLat, baseLon], {
+      radius: 7,
+      color: '#ffffff',
+      weight: 2,
+      fillColor: '#2563eb',
+      fillOpacity: 1
+    })
+    .bindPopup(`<b>가시선 기준점</b><br>고도: ${Math.round(baseElev)}m`)
+    .addTo(viewshedLayer);
   }
 
   const ViewshedControl = L.Control.extend({
     options: { position: 'topleft' },
     onAdd: function(){
       const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
+
       div.innerHTML = `
         <a href="#" id="runViewshedBtn" title="가시선 분석">시</a>
         <a href="#" id="clearViewshedBtn" title="가시선 삭제">×</a>
@@ -1543,9 +1603,9 @@ function applyCollapsed(collapsed) {
   }
 
   function init(){
-    
+    // 사이드바 탐색
     STATE.el = findSidebarElement();
-    if (!STATE.el) return; 
+    if (!STATE.el) return; // 사이드바가 없는 레이아웃이면 아무것도 안 함
 
     applyMobileSizing();
 
@@ -1560,16 +1620,18 @@ window.addEventListener('resize', () => {
   applyMobileSizing();
 });
 
+    // === 사용자 요청 5: 버튼 클릭 이벤트 리스너 추가 ===
     on($('asideToggle'), 'click', toggleCollapsed);
     on($('asideExpand'), 'click', toggleCollapsed);
-    
-    
+    // ===============================================
+
+    // 초기: 모바일이면 반쯤 접힌 상태로 시작해도 좋음 (원하면 false로)
     if (window.innerWidth <= 768){
       applyCollapsed(true, false);
     }
   }
 
-  
+  // DOM 준비 후 초기화
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);
   } else {
