@@ -480,7 +480,7 @@ updateHud(baseLat, baseLon, baseElev);
 
     const radiusKm = 5;          // 분석 반경
     const angleStep = 2;         // 부채꼴 각도 간격
-    const distanceStepKm = 0.1; // 거리 간격: 100m
+    const distanceStepKm = 0.03; // 거리 간격: 30m
 
     const samples = buildViewshedSamplePoints(
       baseLat,
@@ -534,12 +534,15 @@ const targetElev = p.elevation + targetHeightM - curvatureDropM;
 // 기준점에서 목표점까지의 시선 기울기
 const slope = (targetElev - observerElev) / distM;
 
-const visible = slope >= maxSlope;
+// DEM 오차 허용값
+const slopeMargin = 0.01;
 
-if (visible) {
+// 기존 최고 시선보다 아주 조금 낮아도 보이는 것으로 처리
+const visible = slope >= (maxSlope - slopeMargin);
+
+if (slope > maxSlope) {
   maxSlope = slope;
-}
-        const bearing2 = bearing + angleStep;
+}        const bearing2 = bearing + angleStep;
         const dist1 = Math.max(0.02, p.dist - distanceStepKm);
         const dist2 = p.dist;
 
