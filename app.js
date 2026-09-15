@@ -1632,38 +1632,27 @@ function applyCollapsed(collapsed) {
     }
   }
 
-  function init(){
-    STATE.el = findSidebarElement();
-    if (!STATE.el) return; 
+function init(){
+  STATE.el = findSidebarElement();
+  if (!STATE.el) return;
 
-    applyMobileSizing();
-
-    let lastWidth = window.innerWidth; 
-
-window.addEventListener('resize', () => {
-  const currentWidth = window.innerWidth;
-  
-  if (currentWidth === lastWidth) return;
-  
-  lastWidth = currentWidth;
   applyMobileSizing();
-});
 
-const asideToggleEl = document.getElementById('asideToggle');
-const asideExpandEl = document.getElementById('asideExpand');
+  let lastWidth = window.innerWidth;
 
-if (asideToggleEl) {
-  asideToggleEl.addEventListener('click', toggleCollapsed);
-}
+  window.addEventListener('resize', () => {
+    const currentWidth = window.innerWidth;
 
-if (asideExpandEl) {
-  asideExpandEl.addEventListener('click', toggleCollapsed);
-}
+    if (currentWidth === lastWidth) return;
 
-    if (window.innerWidth <= 768){
-      applyCollapsed(true, false);
-    }
+    lastWidth = currentWidth;
+    applyMobileSizing();
+  });
+
+  if (window.innerWidth <= 768){
+    applyCollapsed(true, false);
   }
+}
 
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', init);
