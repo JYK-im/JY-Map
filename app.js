@@ -225,15 +225,15 @@ function setGoogleType(type){
   } else if (type === 'esri') {
 
     if (!esriLayer) {
-      esriLayer = L.tileLayer(
-        'https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/imagery/static/tile/{z}/{y}/{x}?token=' +
-        encodeURIComponent(ESRI_API_KEY),
-        {
-          attribution: 'Powered by Esri',
-          maxZoom: 19,
-          tileSize: 256
-        }
-      );
+esriLayer = L.tileLayer(
+  'https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/imagery/standard/static/tile/{z}/{y}/{x}?token=' +
+  encodeURIComponent(ESRI_API_KEY),
+  {
+    attribution: 'Powered by Esri',
+    maxZoom: 19,
+    tileSize: 256
+  }
+);
     }
 
     esriLayer.addTo(map);
