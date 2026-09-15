@@ -189,7 +189,7 @@ L.control.scale().addTo(map);
 let osmLayer = null;
 let esriLayer = null;
 
-const ESRI_API_KEY = 'AAPTaUhyYgx96PbpoEYIeqrhifw..1SCVFyDs1i9PDhPLF2DcU5b7RdxR1xigPBk-2Hk1OJ2cVyTPtSmCJaphIc5blfGbHrWTUuvJw_mnodRDb3kzoa4CD8XY500lXXwLKj-v0DkZ4Y3BWkVdQdPuHMnLAqdqOo8AQ7HJkcWPrxG_AHU4IMB9lJjPwGxi0dBmmYS4_38FA32U-oamwm5x8hYRC1O1dqOvYxBkoauNRkUH2c8sK6fr6OlajY3WIVNt3_ClvWFqA6zu-zJpVQ..AT1_2CiVan7I';
+const ESRI_API_KEY = 'AAPTayidg1SVdLhGXCJ8qpRbEUA..3hEPORrOuDMsHepKCJOzsenbVVK4eUSeBfPd7SRBtfalsndJ4wRGz1OjXV0RvomRa6bBgKcmhf-bKn8PZoFx7Nfl8mFK_GWAIJ9qUiCDOh6Z48OBBmSJZxzXakb84RhdmAjRQ9YSsie1jxBTxMwiCMDm3P8J7QudQuONz1BzjlhNz2cmaaEQouBg6v7vHZF-raAxRxcjqc9TbvQ0Kl0mz-3gMGGUe0U1Y8h8e8mRUp402023oo_Ilg..AT1_2CiVan7I';
 
 
 
