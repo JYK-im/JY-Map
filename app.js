@@ -1649,8 +1649,8 @@ window.addEventListener('resize', () => {
   applyMobileSizing();
 });
 
-const asideToggleEl = document.querySelector(asideToggle);
-const asideExpandEl = document.querySelector(asideExpand);
+const asideToggleEl = document.getElementById('asideToggle');
+const asideExpandEl = document.getElementById('asideExpand');
 
 if (asideToggleEl) {
   asideToggleEl.addEventListener('click', toggleCollapsed);
