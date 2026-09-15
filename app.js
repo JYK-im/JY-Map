@@ -179,39 +179,90 @@ function updateHud(lat, lon, elevMeters, {loading=false}={}) {
 }
 
   
-  let googleLayer = L.gridLayer.googleMutant({
-    type: 'hybrid',
-    maxZoom: 21
-  }).addTo(map);
+let googleLayer = L.gridLayer.googleMutant({
+  type: 'hybrid',
+  maxZoom: 21
+}).addTo(map);
 
-  L.control.scale().addTo(map);
-  let osmLayer = null;
+L.control.scale().addTo(map);
+
+let osmLayer = null;
+let esriLayer = null;
+
+const ESRI_API_KEY = 'AAPTanask_-esgpa1_6RLcC0EsQ..7wPdCOLdM4V3zBtnpPv7kjyWp7hQiHZWe3aY-UMN7Ak6f7yxtg7b5_5gsYm_7NRybFHYYDijnkNn6ykiJ0vLEF68vMIFPDBsUD_s7Heoydj_-8Q0N4nmZuv2Qr-Jcd07KPnMu-thyP2rvtUBPw-n8rcPJDDat5GwpHfDo1qr2thPaThaJXqfshuXFZI3ExjvusYv7DvEDCJc9G-A1yr6OYlMf0xfY5T6n-cyzIpsDI04LU8CF9FN8Q..AT1_2CiVan7I';
 
 
 
 function setGoogleType(type){
+
+  if (googleLayer && map.hasLayer(googleLayer)) {
+    map.removeLayer(googleLayer);
+  }
+
+  if (osmLayer && map.hasLayer(osmLayer)) {
+    map.removeLayer(osmLayer);
+  }
+
+  if (esriLayer && map.hasLayer(esriLayer)) {
+    map.removeLayer(esriLayer);
+  }
+
   if (type === 'osm') {
-    if (googleLayer && map.hasLayer(googleLayer)) map.removeLayer(googleLayer);
+
     if (!osmLayer) {
-      osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
+      osmLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19
+        }
+      );
+    }
+
+    osmLayer.addTo(map);
+
+  } else if (type === 'esri') {
+
+    if (!esriLayer) {
+      esriLayer = L.tileLayer(
+        'https://static-map-tiles-api.arcgis.com/arcgis/rest/services/static-basemap-tiles-service/v1/arcgis/imagery/static/tile/{z}/{y}/{x}?token=' +
+        encodeURIComponent(ESRI_API_KEY),
+        {
+          attribution: 'Powered by Esri',
+          maxZoom: 19,
+          tileSize: 256
+        }
+      );
+    }
+
+    esriLayer.addTo(map);
+
+  } else {
+
+    if (typeof googleLayer.setMapType === 'function') {
+
+      googleLayer.setMapType(type);
+
+    } else if (typeof googleLayer.setMapTypeId === 'function') {
+
+      googleLayer.setMapTypeId(type);
+
+    } else {
+
+      try {
+        map.removeLayer(googleLayer);
+      } catch (_) {}
+
+      googleLayer = L.gridLayer.googleMutant({
+        type: type,
+        maxZoom: 21
       });
     }
-    if (!map.hasLayer(osmLayer)) osmLayer.addTo(map);
-  } else {
-    if (osmLayer && map.hasLayer(osmLayer)) map.removeLayer(osmLayer);
-    
-    if (typeof googleLayer.setMapType === 'function') {
-      googleLayer.setMapType(type);
-    } else if (typeof googleLayer.setMapTypeId === 'function') {
-      googleLayer.setMapTypeId(type);
-    } else {
-      try { map.removeLayer(googleLayer); } catch(_) {}
-      googleLayer = L.gridLayer.googleMutant({ type, maxZoom:21 });
-      googleLayer.addTo(map);
-    }
+
+    googleLayer.addTo(map);
   }
+
   updateTypeButtons(type);
 }
 
@@ -225,9 +276,10 @@ box.innerHTML = `
     <span class="chev">▸</span>
   </div>
       <div class="fold-content">
-        <div class="btn-row"><button class="btn" data-type="hybrid" title="위성 + 지명">위성 + 지명</button></div>
-        <div class="btn-row"><button class="btn" data-type="satellite">위성</button></div>
-        <div class="btn-row"><button class="btn" data-type="osm" title="오픈스트리트맵">OSM</button></div>
+<div class="btn-row"><button class="btn" data-type="hybrid" title="Google 위성 + 지명">위성 + 지명</button></div>
+<div class="btn-row"><button class="btn" data-type="satellite" title="Google 위성">위성</button></div>
+<div class="btn-row"><button class="btn" data-type="esri" title="Esri World Imagery">Esri 위성</button></div>
+<div class="btn-row"><button class="btn" data-type="osm" title="OpenStreetMap">OSM</button></div>
 
 
       </div>
