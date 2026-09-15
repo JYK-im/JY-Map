@@ -1649,8 +1649,16 @@ window.addEventListener('resize', () => {
   applyMobileSizing();
 });
 
-    on($('asideToggle'), 'click', toggleCollapsed);
-    on($('asideExpand'), 'click', toggleCollapsed);
+const asideToggleEl = $(asideToggle);
+const asideExpandEl = $(asideExpand);
+
+if (asideToggleEl) {
+  asideToggleEl.addEventListener('click', toggleCollapsed);
+}
+
+if (asideExpandEl) {
+  asideExpandEl.addEventListener('click', toggleCollapsed);
+}
 
     if (window.innerWidth <= 768){
       applyCollapsed(true, false);
